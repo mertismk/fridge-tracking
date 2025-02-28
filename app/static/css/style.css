@@ -1,0 +1,93 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+.card {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.table th {
+    font-weight: 600;
+    border-top: none;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+}
+
+.btn-primary {
+    background-color: #4361ee;
+    border-color: #4361ee;
+}
+
+.btn-primary:hover {
+    background-color: #3a56d4;
+    border-color: #3a56d4;
+}
+
+.bg-primary {
+    background-color: #4361ee !important;
+}
+
+.bg-success {
+    background-color: #2ec4b6 !important;
+}
+
+.bg-warning {
+    background-color: #ff9f1c !important;
+}
+
+.bg-danger {
+    background-color: #e63946 !important;
+}
+
+.bg-info {
+    background-color: #4cc9f0 !important;
+}
+
+.categories-chart {
+    height: 200px;
+    position: relative;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.card {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.badge {
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: scale(1.1);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 20px;
+    }
+}

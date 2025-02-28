@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавить продукт | Планировщик холодильника{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Добавить продукт</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Категория</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Выберите категорию</option>
+                            <option value="Молочные продукты">Молочные продукты</option>
+                            <option value="Мясо">Мясо</option>
+                            <option value="Овощи">Овощи</option>
+                            <option value="Фрукты">Фрукты</option>
+                            <option value="Бакалея">Бакалея</option>
+                            <option value="Напитки">Напитки</option>
+                            <option value="Замороженные продукты">Замороженные продукты</option>
+                            <option value="Готовые блюда">Готовые блюда</option>
+                            <option value="Другое">Другое</option>
+                        </select>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="quantity" class="form-label">Количество</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" min="0.1" step="0.1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="unit" class="form-label">Единица измерения</label>
+                            <select class="form-select" id="unit" name="unit" required>
+                                <option value="">Выберите единицу</option>
+                                <option value="шт">шт</option>
+                                <option value="кг">кг</option>
+                                <option value="г">г</option>
+                                <option value="л">л</option>
+                                <option value="мл">мл</option>
+                                <option value="упаковка">упаковка</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="expiry_date" class="form-label">Срок годности</label>
+                        <input type="date" class="form-control" id="expiry_date" name="expiry_date" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

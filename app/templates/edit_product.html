@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать продукт | Планировщик холодильника{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-pencil"></i> Редактировать продукт</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ product.name }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Категория</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Выберите категорию</option>
+                            <option value="Молочные продукты" {% if product.category == 'Молочные продукты' %}selected{% endif %}>Молочные продукты</option>
+                            <option value="Мясо" {% if product.category == 'Мясо' %}selected{% endif %}>Мясо</option>
+                            <option value="Овощи" {% if product.category == 'Овощи' %}selected{% endif %}>Овощи</option>
+                            <option value="Фрукты" {% if product.category == 'Фрукты' %}selected{% endif %}>Фрукты</option>
+                            <option value="Бакалея" {% if product.category == 'Бакалея' %}selected{% endif %}>Бакалея</option>
+                            <option value="Напитки" {% if product.category == 'Напитки' %}selected{% endif %}>Напитки</option>
+                            <option value="Замороженные продукты" {% if product.category == 'Замороженные продукты' %}selected{% endif %}>Замороженные продукты</option>
+                            <option value="Готовые блюда" {% if product.category == 'Готовые блюда' %}selected{% endif %}>Готовые блюда</option>
+                            <option value="Другое" {% if product.category == 'Другое' %}selected{% endif %}>Другое</option>
+                        </select>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="quantity" class="form-label">Количество</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" value="{{ product.quantity }}" min="0.1" step="0.1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="unit" class="form-label">Единица измерения</label>
+                            <select class="form-select" id="unit" name="unit" required>
+                                <option value="">Выберите единицу</option>
+                                <option value="шт" {% if product.unit == 'шт' %}selected{% endif %}>шт</option>
+                                <option value="кг" {% if product.unit == 'кг' %}selected{% endif %}>кг</option>
+                                <option value="г" {% if product.unit == 'г' %}selected{% endif %}>г</option>
+                                <option value="л" {% if product.unit == 'л' %}selected{% endif %}>л</option>
+                                <option value="мл" {% if product.unit == 'мл' %}selected{% endif %}>мл</option>
+                                <option value="упаковка" {% if product.unit == 'упаковка' %}selected{% endif %}>упаковка</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="expiry_date" class="form-label">Срок годности</label>
+                        <input type="date" class="form-control" id="expiry_date" name="expiry_date" value="{{ product.expiry_date.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
