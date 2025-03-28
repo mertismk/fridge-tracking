@@ -9,25 +9,22 @@ login_manager = LoginManager()
 
 def create_app(config=None):
     app = Flask(__name__, instance_relative_config=True)
-    
-    # Базовая конфигурация
+
+
     app.config.from_mapping(
         SECRET_KEY='dev',
-        SQLALCHEMY_DATABASE_URI='postgresql://username:password@localhost:5432/fridge_planner',
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
+
     
-    # Применяем переданную конфигурацию, если она есть
     if config:
         app.config.update(config)
-    
+
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = (
-        "auth.login" 
-    )
+    login_manager.login_view = "auth.login"
 
-    from app import routes, auth 
+    from app import routes, auth, models  
 
     app.register_blueprint(routes.main)
     app.register_blueprint(auth.auth)
@@ -38,5 +35,4 @@ def create_app(config=None):
 @login_manager.user_loader
 def load_user(user_id):
     from app.models import User
-
     return User.query.get(int(user_id))
