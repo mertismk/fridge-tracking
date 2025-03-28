@@ -27,32 +27,30 @@ def init_db():
             create_database(engine.url.set(database=db_name))
             print(f"База данных '{db_name}' создана!")
 
-            db_engine = create_engine(database_uri)
+        db_engine = create_engine(database_uri)
 
-            with app.app_context():
-                try:
-                    db.create_all()
-                    print("Таблицы созданы через SQLAlchemy")
-                except Exception as e:
-                    print(f"Ошибка при создании таблиц SQLAlchemy: {e}")
+        with app.app_context():
+            try:
+                db.create_all()
+                print("Таблицы созданы через SQLAlchemy")
+            except Exception as e:
+                print(f"Ошибка при создании таблиц SQLAlchemy: {e}")
 
-            sql_path = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "db_init.sql"
-            )
-            if os.path.exists(sql_path):
-                with open(sql_path, "r", encoding="utf-8") as f:
-                    sql_script = f.read()
-                try:
-                    with db_engine.connect() as conn:
-                        conn.execute(text(sql_script))
-                        conn.commit()
-                    print("База данных успешно инициализирована через SQL-скрипт!")
-                except Exception as e:
-                    print(f"Ошибка при выполнении SQL-скрипта: {e}")
-        # else:
-        #     print(f"База данных '{db_name}' уже существует")
-        #     with app.app_context():
-        #         db.create_all()
+        sql_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "db_init.sql"
+        )
+        if os.path.exists(sql_path):
+            with open(sql_path, "r", encoding="utf-8") as f:
+                sql_script = f.read()
+            try:
+                with db_engine.connect() as conn:
+                    conn.execute(text(sql_script))
+                    conn.commit()
+                print("База данных успешно инициализирована через SQL-скрипт!")
+            except Exception as e:
+                print(f"Ошибка при выполнении SQL-скрипта: {e}")
+        else:
+            print(f"Файл инициализации БД не найден: {sql_path}")
 
     except Exception as e:
         print(f"Ошибка при инициализации базы данных: {e}")
