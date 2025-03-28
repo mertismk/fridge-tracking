@@ -67,7 +67,6 @@ body {
     position: relative;
 }
 
-/* Анимации */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -85,7 +84,6 @@ body {
     transform: scale(1.1);
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .card {
         margin-bottom: 20px;

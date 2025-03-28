@@ -44,6 +44,7 @@ def add_product():
             quantity=quantity,
             unit=unit,
             expiry_date=expiry_date,
+            user_id=current_user.id,
         )
 
         db.session.add(product)

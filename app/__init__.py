@@ -7,10 +7,20 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 
 
-def create_app(config_class=Config):
-    app = Flask(__name__)
-    app.config.from_object(config_class)
-
+def create_app(config=None):
+    app = Flask(__name__, instance_relative_config=True)
+    
+    # Базовая конфигурация
+    app.config.from_mapping(
+        SECRET_KEY='dev',
+        SQLALCHEMY_DATABASE_URI='postgresql://username:password@localhost:5432/fridge_planner',
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    )
+    
+    # Применяем переданную конфигурацию, если она есть
+    if config:
+        app.config.update(config)
+    
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = (

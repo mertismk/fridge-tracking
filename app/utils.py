@@ -2,14 +2,12 @@ from datetime import datetime, timedelta
 import random
 
 def get_expiring_products(products, days=3):
-    """Возвращает продукты, которые скоро испортятся"""
     today = datetime.utcnow()
     soon = today + timedelta(days=days)
     
     return [p for p in products if today < p.expiry_date <= soon]
 
 def get_expired_message(product):
-    """Возвращает забавное сообщение о просроченном продукте"""
     messages = [
         f"{product.name} уже не первой свежести... Пора прощаться!",
         f"Кажется, {product.name} решил стать новым видом сыра с плесенью!",
@@ -30,16 +28,11 @@ def get_expired_message(product):
     return random.choice(messages)
 
 def get_recipe_suggestions(products):
-    """Имитация предложения рецептов из имеющихся продуктов"""
-    # В реальном приложении здесь был бы алгоритм подбора рецептов
-    # или интеграция с API рецептов
-    
     valid_products = [p for p in products if not p.is_expired()]
     
     if len(valid_products) < 2:
         return []
     
-    # Просто для примера генерируем "фейковые" рецепты
     suggestions = []
     
     if any(p.category == "Овощи" for p in valid_products) and any(p.category == "Мясо" for p in valid_products):

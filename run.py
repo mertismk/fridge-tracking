@@ -1,47 +1,63 @@
 # run.py
 from app import create_app, db
-import sqlite3
 import os
+from sqlalchemy import create_engine, text
+from sqlalchemy_utils import database_exists, create_database
 
-app = create_app()
+
+db_user = os.environ.get('DB_USER', 'postgres')
+db_password = os.environ.get('DB_PASSWORD', '2705')
+db_host = os.environ.get('DB_HOST', 'localhost')
+db_port = os.environ.get('DB_PORT', '5432')
+db_name = os.environ.get('DB_NAME', 'fridge_planner')
+
+database_uri = f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
+
+app = create_app({'SQLALCHEMY_DATABASE_URI': database_uri})
 
 def init_db():
-    """Инициализация базы данных с тестовыми данными если она не существует"""
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance', 'fridge_planner.db')
+    engine_uri = f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/postgres'
     
-    # Проверяем, существует ли база данных
-    if not os.path.exists(db_path):
-        # Создаем директорию для БД, если она не существует
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    try:
+        # Проверяем и создаем базу данных если нужно
+        engine = create_engine(engine_uri)
         
-        print("Создание новой базы данных с тестовыми данными...")
+        db_exists = database_exists(engine.url.set(database=db_name))
         
-        # Читаем SQL-скрипт
-        sql_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'db_init.sql')
-        
-        if os.path.exists(sql_path):
-            with open(sql_path, 'r', encoding='utf-8') as f:
-                sql_script = f.read()
+        if not db_exists:
+            print(f"Создание новой базы данных '{db_name}'...")
+            create_database(engine.url.set(database=db_name))
+            print(f"База данных '{db_name}' создана!")
             
-            # Создаем БД и выполняем скрипт
-            conn = sqlite3.connect(db_path)
-            conn.executescript(sql_script)
-            conn.commit()
-            conn.close()
+            # Теперь работаем с новой базой данных
+            db_engine = create_engine(database_uri)
             
-            print("База данных успешно инициализирована!")
-        else:
-            print("Файл db_init.sql не найден!")
             # Создаем таблицы через SQLAlchemy
             with app.app_context():
                 db.create_all()
                 print("Таблицы созданы через SQLAlchemy")
-    else:
-        print("База данных уже существует")
+                
+            # Загружаем SQL-скрипт инициализации для новой базы
+            sql_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'db_init.sql')
+            
+            if os.path.exists(sql_path):
+                with open(sql_path, 'r', encoding='utf-8') as f:
+                    sql_script = f.read()
+                
+                with db_engine.connect() as conn:
+                    conn.execute(text(sql_script))
+                    conn.commit()
+                print("База данных успешно инициализирована через SQL-скрипт!")
+        # else:
+            # print(f"База данных '{db_name}' уже существует")
+            # # Только проверяем и создаем недостающие таблицы
+            # with app.app_context():
+            #     db.create_all()
+                
+    except Exception as e:
+        print(f"Ошибка при инициализации базы данных: {e}")
 
 if __name__ == '__main__':
-    # Инициализация базы данных
     init_db()
     
-    # Запуск приложения
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

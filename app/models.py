@@ -12,7 +12,6 @@ class Product(db.Model):
     unit = db.Column(db.String(20), nullable=False)
     expiry_date = db.Column(db.DateTime, nullable=False)
     date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    # Новое поле для привязки к пользователю
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     owner = db.relationship("User", backref=db.backref("products", lazy=True))
 
@@ -53,7 +52,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
     date_joined = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def set_password(self, password):
