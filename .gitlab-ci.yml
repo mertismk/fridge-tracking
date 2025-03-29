@@ -1,0 +1,31 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375
+
+services:
+  - docker:dind
+
+build:
+  stage: build
+  image: docker:latest
+  script:
+    - docker build -t \$CI_REGISTRY_IMAGE:\$CI_COMMIT_REF_SLUG .
+    - docker tag \$CI_REGISTRY_IMAGE:\$CI_COMMIT_REF_SLUG \$CI_REGISTRY_IMAGE:latest
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: docker:latest
+  before_script:
+    - docker login -u \$DOCKER_HUB_USER -p \$DOCKER_HUB_PASSWORD
+  script:
+    - docker tag \$CI_REGISTRY_IMAGE:latest \$DOCKER_HUB_USER/fridge_planner:latest
+    - docker push \$DOCKER_HUB_USER/fridge_planner:latest
+  only:
+    - main
