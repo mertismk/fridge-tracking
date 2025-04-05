@@ -1,4 +1,4 @@
-# Fridge Tracking Application
+# Fridge Tracking
 
 Приложение для отслеживания продуктов в холодильнике.
 
