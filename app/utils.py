@@ -50,3 +50,43 @@ def get_recipe_suggestions(products):
         })
     
     return suggestions
+
+def suggest_shopping_items(user_id, db, Product):
+    """
+    Предлагает часто добавляемые пользователем продукты для списка покупок
+    
+    Args:
+        user_id: ID пользователя
+        db: экземпляр базы данных
+        Product: модель Product
+        
+    Returns:
+        list: список словарей с предложениями продуктов
+    """
+    # Получаем все продукты пользователя с группировкой по названию и подсчетом количества
+    product_counts = db.session.query(
+        Product.name, 
+        Product.category, 
+        Product.unit, 
+        db.func.count(Product.id).label('count')
+    ).filter(
+        Product.user_id == user_id
+    ).group_by(
+        Product.name, 
+        Product.category, 
+        Product.unit
+    ).order_by(
+        db.desc('count')
+    ).limit(10).all()
+    
+    # Преобразуем результаты в список словарей
+    suggestions = []
+    for name, category, unit, count in product_counts:
+        suggestions.append({
+            "name": name,
+            "category": category,
+            "unit": unit,
+            "frequency": count
+        })
+    
+    return suggestions
