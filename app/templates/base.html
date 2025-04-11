@@ -26,7 +26,10 @@
                         <a class="nav-link" href="{{ url_for('main.add_product') }}">Добавить продукт</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.statistics') }}">Статистика</a>
+                        <a class="nav-link {% if request.endpoint == 'main.statistics' %}active{% endif %}" href="{{ url_for('main.statistics') }}">Статистика</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.shopping_list' %}active{% endif %}" href="{{ url_for('main.shopping_list') }}">Список покупок</a>
                     </li>
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
