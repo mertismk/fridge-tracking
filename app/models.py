@@ -48,6 +48,22 @@ class Product(db.Model):
         return f"<Product {self.name}>"
 
 
+class ShoppingItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    category = db.Column(db.String(50), nullable=True)
+    quantity = db.Column(db.Float, nullable=True)
+    unit = db.Column(db.String(20), nullable=True)
+    priority = db.Column(db.Integer, default=2)  # 1 - высокий, 2 - средний, 3 - низкий
+    is_purchased = db.Column(db.Boolean, default=False)
+    date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    owner = db.relationship("User", backref=db.backref("shopping_items", lazy=True))
+
+    def __repr__(self):
+        return f"<ShoppingItem {self.name}>"
+
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)

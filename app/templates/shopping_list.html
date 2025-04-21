@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Список покупок{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Список покупок</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('main.generate_shopping_list') }}" class="btn btn-primary">
+                <i class="bi bi-magic"></i> Автоматически добавить
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Добавить в список покупок</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.add_shopping_item') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Название продукта</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">Категория</label>
+                                    <select class="form-select" id="category" name="category">
+                                        <option value="">Выберите категорию</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category }}">{{ category }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="priority" class="form-label">Приоритет</label>
+                                    <select class="form-select" id="priority" name="priority">
+                                        <option value="1">Высокий</option>
+                                        <option value="2" selected>Средний</option>
+                                        <option value="3">Низкий</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="quantity" class="form-label">Количество</label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity" min="0" step="0.1">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="unit" class="form-label">Ед. измерения</label>
+                                    <select class="form-select" id="unit" name="unit">
+                                        <option value="">Выберите единицу</option>
+                                        <option value="кг">кг</option>
+                                        <option value="г">г</option>
+                                        <option value="л">л</option>
+                                        <option value="мл">мл</option>
+                                        <option value="шт">шт</option>
+                                        <option value="упаковка">упаковка</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">Добавить в список</button>
+                    </form>
+                </div>
+            </div>
+            
+            {% if suggestions %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Ваши популярные продукты</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for suggestion in suggestions %}
+                        <div class="col-md-6 mb-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm w-100 suggestion-btn"
+                                data-name="{{ suggestion.name }}"
+                                data-category="{{ suggestion.category }}"
+                                data-unit="{{ suggestion.unit }}">
+                                {{ suggestion.name }}
+                                <span class="badge bg-secondary ms-1">{{ suggestion.frequency }}x</span>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Текущий список покупок</h5>
+                </div>
+                <div class="card-body">
+                    {% if items %}
+                    <ul class="list-group shopping-list">
+                        {% for item in items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center {% if item.is_purchased %}text-muted bg-light{% endif %}">
+                            <div class="form-check flex-grow-1">
+                                <form method="POST" action="{{ url_for('main.toggle_shopping_item', id=item.id) }}" class="toggle-form">
+                                    <input class="form-check-input shopping-checkbox" type="checkbox" {% if item.is_purchased %}checked{% endif %}
+                                        data-item-id="{{ item.id }}" id="item-{{ item.id }}">
+                                    <label class="form-check-label{% if item.is_purchased %} text-decoration-line-through{% endif %}" for="item-{{ item.id }}">
+                                        {{ item.name }}
+                                        {% if item.quantity %}
+                                        <small class="text-secondary">
+                                            ({{ item.quantity }} {{ item.unit }})
+                                        </small>
+                                        {% endif %}
+                                        
+                                        {% if item.priority == 1 %}
+                                        <span class="badge bg-danger ms-2">Важно</span>
+                                        {% elif item.priority == 3 %}
+                                        <span class="badge bg-secondary ms-2">Низкий</span>
+                                        {% endif %}
+                                    </label>
+                                </form>
+                            </div>
+                            <a href="{{ url_for('main.delete_shopping_item', id=item.id) }}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="alert alert-info">
+                        Список покупок пуст. Добавьте продукты с помощью формы слева.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработка клика по чекбоксу
+        document.querySelectorAll('.shopping-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const form = this.closest('form');
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const label = this.nextElementSibling;
+                        if (data.is_purchased) {
+                            label.classList.add('text-decoration-line-through');
+                            this.closest('li').classList.add('text-muted', 'bg-light');
+                        } else {
+                            label.classList.remove('text-decoration-line-through');
+                            this.closest('li').classList.remove('text-muted', 'bg-light');
+                        }
+                    }
+                });
+            });
+        });
+
+        // Обработка клика по кнопкам предложений
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const name = this.getAttribute('data-name');
+                const category = this.getAttribute('data-category');
+                const unit = this.getAttribute('data-unit');
+                
+                document.getElementById('name').value = name;
+                
+                const categorySelect = document.getElementById('category');
+                for (let i = 0; i < categorySelect.options.length; i++) {
+                    if (categorySelect.options[i].value === category) {
+                        categorySelect.selectedIndex = i;
+                        break;
+                    }
+                }
+                
+                const unitSelect = document.getElementById('unit');
+                for (let i = 0; i < unitSelect.options.length; i++) {
+                    if (unitSelect.options[i].value === unit) {
+                        unitSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 
