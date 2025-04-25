@@ -24,15 +24,15 @@ pipeline {
             }
         }
 
-        stage('Check Branch Name') {
-            steps {
-                sh 'echo "Значение BRANCH_NAME: $BRANCH_NAME"'
-            }
-        }
+        // stage('Check Branch Name') {
+        //     steps {
+        //         sh 'echo "Значение BRANCH_NAME: $BRANCH_NAME"'
+        //     }
+        // }
 
         stage('Deploy to Stage') {
             when {
-                expression { return env.BRANCH_NAME == 'dev' }
+                expression { return env.GIT_BRANCH == 'dev' }
             }
             steps {
                 sh '''
