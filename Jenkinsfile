@@ -30,10 +30,10 @@ pipeline {
             }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'timofey-stage-deploy-key', keyFileVariable: 'SSH_KEY_FILE')]) {
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no timofey@89.169.142.35 "mkdir -p /home/timofey/fridge_planner"
-                    scp -o StrictHostKeyChecking=no docker-compose.yml timofey@89.169.142.35:/home/timofey/fridge_planner/
-                    ssh -o StrictHostKeyChecking=no timofey@89.169.142.35 "cd /home/timofey/fridge_planner && \\
+                    sh """
+                    ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 "mkdir -p /home/timofey/fridge_planner"
+                    scp -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv docker-compose.yml timofey@89.169.142.35:/home/timofey/fridge_planner/
+                    ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 "cd /home/timofey/fridge_planner && \\
                     echo 'Attempting to modify docker-compose.yml...' && \\
                     sed -i 's/mertismk\\/fridge_planner/51.250.4.236:5000\\/fridge_planner:latest/' docker-compose.yml && \\
                     echo 'Attempting docker-compose down...' && \\
@@ -41,7 +41,7 @@ pipeline {
                     echo 'Attempting docker-compose up -d...' && \\
                     docker-compose up -d && \\
                     echo 'Deployment commands finished.'"
-                    '''
+                    """
                 }
             }
         }
