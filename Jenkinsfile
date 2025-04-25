@@ -26,15 +26,15 @@ pipeline {
         
         stage('Deploy to Stage') {
             when {
-                branch 'dev'
+                expression { return env.BRANCH_NAME == 'dev' }
             }
             steps {
                 sh '''
                 ssh -o StrictHostKeyChecking=no timofey@89.169.142.35 "mkdir -p /home/timofey/fridge_planner"
-                scp docker-compose.yml timofey@89.169.142.35:/home/timofey/fridge_planner/
-                ssh -o StrictHostKeyChecking=no timofey@89.169.142.35 "cd /home/timofey/fridge_planner && \
-                docker pull 51.250.4.236:5000/fridge_planner:latest && \
-                docker-compose down && \
+                scp docker-compose.yaml timofey@89.169.142.35:/home/timofey/fridge_planner/
+                ssh -o StrictHostKeyChecking=no timofey@89.169.142.35 "cd /home/timofey/fridge_planner && \\
+                sed -i 's/mertismk\\/fridge_planner/51.250.4.236:5000\\/fridge_planner:latest/' docker-compose.yml && \\
+                docker-compose down && \\
                 docker-compose up -d"
                 '''
             }
