@@ -11,7 +11,20 @@ main = Blueprint("main", __name__)
 @main.route("/")
 @login_required
 def index():
-    products = Product.query.filter_by(user_id=current_user.id).all()
+    # Получаем строку поиска из аргументов запроса
+    search_query = request.args.get('q', '') 
+    
+    # Базовый запрос для продуктов текущего пользователя
+    query = Product.query.filter_by(user_id=current_user.id)
+
+    # Если есть поисковый запрос, применяем фильтр по имени
+    if search_query:
+        query = query.filter(Product.name.ilike(f'%{search_query}%'))
+
+    # Получаем отфильтрованный список продуктов
+    products = query.all()
+    
+    # Остальная логика остается прежней
     expired_products = [p for p in products if p.is_expired()]
     expiring_soon = get_expiring_products(products, days=3)
     suggestions = get_recipe_suggestions(products)
@@ -25,6 +38,7 @@ def index():
         suggestions=suggestions,
         veterans=veterans,
         get_expired_message=get_expired_message,
+        search_query=search_query # Передаем строку поиска в шаблон
     )
 
 
