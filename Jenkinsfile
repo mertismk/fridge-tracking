@@ -30,19 +30,28 @@ pipeline {
             }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'timofey-stage-deploy-key', keyFileVariable: 'SSH_KEY_FILE')]) {
-                    sh """
-                    ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 "mkdir -p /home/timofey/fridge_planner"
-                    ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 "rm -rf /home/timofey/fridge_planner/db_init.sql"
-                    scp -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv docker-compose.yml db_init.sql timofey@89.169.142.35:/home/timofey/fridge_planner/
-                    ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 "cd /home/timofey/fridge_planner && \\
-                    echo 'Attempting to modify docker-compose.yml...' && \\
-                    sed -i 's/mertismk\\/fridge_planner/51.250.4.236:5000\\/fridge_planner:latest/' docker-compose.yml && \\
-                    echo 'Attempting docker-compose down...' && \\
-                    docker-compose down && \\
-                    echo 'Attempting docker-compose up -d...' && \\
-                    docker-compose up -d --force-recreate && \\
-                    echo 'Deployment commands finished.'"
-                    """
+                    // Шаг 1: Создать директорию
+                    sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"mkdir -p /home/timofey/fridge_planner\""""
+                    
+                    // Шаг 2: Проверить права на директорию
+                    sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"ls -ld /home/timofey/fridge_planner\""""
+                    
+                    // Шаг 3: Удалить старый db_init.sql (файл или директорию), если он существует
+                    sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"rm -rf /home/timofey/fridge_planner/db_init.sql\""""
+                    
+                    // Шаг 4: Копировать файлы
+                    sh """scp -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv docker-compose.yml db_init.sql timofey@89.169.142.35:/home/timofey/fridge_planner/"""
+                    
+                    // Шаг 5: Выполнить docker-compose
+                    sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"
+                        cd /home/timofey/fridge_planner && \\
+                        echo 'Attempting to modify docker-compose.yml...' && \\
+                        sed -i 's/mertismk\\\\/fridge_planner/51.250.4.236:5000\\\\/fridge_planner:latest/' docker-compose.yml && \\
+                        echo 'Attempting docker-compose down...' && \\
+                        docker-compose down && \\
+                        echo 'Attempting docker-compose up -d...' && \\
+                        docker-compose up -d --force-recreate && \\
+                        echo 'Deployment commands finished.'\""""
                 }
             }
         }
