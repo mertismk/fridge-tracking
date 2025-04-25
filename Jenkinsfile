@@ -26,7 +26,7 @@ pipeline {
 
         stage('Check Branch Name') {
             steps {
-                sh 'echo "Значение BRANCH_NAME: ${env.BRANCH_NAME}"'
+                sh 'echo "Значение BRANCH_NAME: $BRANCH_NAME"'
             }
         }
 
