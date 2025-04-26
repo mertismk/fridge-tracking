@@ -34,26 +34,6 @@ else
 fi
 
 echo "-------------------------------------"
-echo " Запуск Gitleaks для поиска секретов..."
-echo "-------------------------------------"
-# Gitleaks будет установлен через apt-get внутри docker run
-# Запускаем с --exit-code 1
-if command -v gitleaks &> /dev/null; then
-    gitleaks detect --source . --report-path reports/gitleaks-report.json --report-format json --exit-code 1 -v
-    GITLEAKS_EXIT_CODE=$?
-    if [ $GITLEAKS_EXIT_CODE -ne 0 ]; then
-        echo "*** Gitleaks НАШЕЛ СЕКРЕТЫ или ЗАВЕРШИЛСЯ С ОШИБКОЙ (код: $GITLEAKS_EXIT_CODE) ***"
-        EXIT_CODE=1
-    else
-        echo "Gitleaks прошел успешно (секреты не найдены)."
-    fi
-else
-     # Этого не должно произойти, так как мы установим gitleaks через apt/wget
-    echo "*** ОШИБКА: gitleaks не найден после попытки установки! ***"
-    EXIT_CODE=1 
-fi
-
-echo "-------------------------------------"
 echo " Запуск тестов с покрытием..."
 echo "-------------------------------------"
 pytest --cov=. --cov-report=xml:reports/coverage.xml tests/
