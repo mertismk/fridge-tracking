@@ -3,10 +3,6 @@ pipeline {
         label 'docker'
     }
 
-    environment {
-        // Убрали переменные SonarQube
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -14,7 +10,6 @@ pipeline {
             }
         }
 
-        // Этот этап теперь отвечает за анализ и провал билда при ошибках
         stage('Run Tests & Analysis') {
             steps {
                 sh 'chmod +x scripts/run_analysis.sh'
