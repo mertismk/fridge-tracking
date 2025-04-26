@@ -1,0 +1,53 @@
+### Bandit config file generated
+
+# Skip these paths during the scan
+exclude_dirs: ['.git', 'venv', 'env', '.env', '.venv', 'tests']
+
+# Tests to skip
+skips: []
+
+# Severity level
+severity: medium
+
+# Confidence level
+confidence: medium
+
+tests:
+  - B101  # assert statements
+  - B102  # exec statements
+  - B103  # set_bad_file_permissions
+  - B104  # bind_all_interfaces
+  - B105  # hardcoded_password_string
+  - B106  # hardcoded_password_funcarg
+  - B107  # hardcoded_password_default
+  - B108  # hardcoded_tmp_directory
+  - B110  # try_except_pass
+  - B112  # try_except_continue
+  - B201  # flask_debug_true
+  - B301  # pickle
+  - B302  # marshal
+  - B303  # md5
+  - B304  # sha1
+  - B305  # weak_cryptographic_key
+  - B306  # bad_mac
+  - B307  # eval
+  - B308  # mark_safe
+  - B309  # httpsconnection
+  - B310  # urllib_urlopen
+  - B311  # random
+  - B312  # telnetlib
+  - B313  # xml_bad_cElementTree
+  - B314  # xml_bad_ElementTree
+  - B315  # xml_bad_expatreader
+  - B316  # xml_bad_expatbuilder
+  - B317  # xml_bad_sax
+  - B318  # xml_bad_minidom
+  - B319  # xml_bad_pulldom
+  - B320  # xml_bad_etree
+  - B321  # ftplib
+  - B323  # unverified_context
+  - B324  # hashlib_insecure_functions
+  - B325  # tempnam
+
+output_format: json
+output_file: bandit-report.json 
