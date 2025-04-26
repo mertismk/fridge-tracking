@@ -255,7 +255,7 @@ def generate_shopping_list():
     ).all()
     current_item_names = [item.name.lower() for item in current_items]
 
-    # Добавляем продукты с малым количеством в список покупок, если их еще нет там
+
     added_count = 0
     for product in low_stock_products:
         if product.name.lower() not in current_item_names:
