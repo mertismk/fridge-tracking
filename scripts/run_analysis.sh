@@ -1,53 +1,87 @@
 #!/bin/bash
 
-# Выходить немедленно, если команда завершается с ненулевым статусом.
-set -e
-
-# Проверяем наличие базовых утилит
-echo "Проверка наличия wget..."
-command -v wget >/dev/null 2>&1 || { echo >&2 "Ошибка: wget не найден."; exit 1; }
-echo "Проверка наличия tar..."
-command -v tar >/dev/null 2>&1 || { echo >&2 "Ошибка: tar не найден."; exit 1; }
+# Убираем set -e для детальной отладки
+# set -e 
 
 # Создаем директорию для отчетов, если она не существует
 mkdir -p reports
 
+# Флаг для отслеживания общей ошибки
+EXIT_CODE=0
+
 echo "-------------------------------------"
 echo " Запуск Flake8 для проверки качества кода..."
 echo "-------------------------------------"
-# Flake8 завершится с ошибкой, если найдет проблемы
 flake8 .
+FLAKE8_EXIT_CODE=$?
+if [ $FLAKE8_EXIT_CODE -ne 0 ]; then
+    echo "*** Flake8 ЗАВЕРШИЛСЯ С ОШИБКОЙ (код: $FLAKE8_EXIT_CODE) ***"
+    EXIT_CODE=1
+else
+    echo "Flake8 прошел успешно."
+fi
 
 echo "-------------------------------------"
 echo " Запуск Bandit для проверки безопасности..."
 echo "-------------------------------------"
-# Bandit завершится с ошибкой, если найдет проблемы >= high severity (согласно .bandit.yml)
 bandit -r . -c .bandit.yml -f json -o reports/bandit-report.json
+BANDIT_EXIT_CODE=$?
+if [ $BANDIT_EXIT_CODE -ne 0 ]; then
+    echo "*** Bandit ЗАВЕРШИЛСЯ С ОШИБКОЙ (код: $BANDIT_EXIT_CODE) - Проверьте severity/confidence в .bandit.yml ***"
+    EXIT_CODE=1
+else
+    echo "Bandit прошел успешно (не найдено проблем >= high severity)."
+fi
 
 echo "-------------------------------------"
-echo " Запуск Gitleaks для поиска секретов (без падения и скачивания)..."
+echo " Запуск Gitleaks для поиска секретов..."
 echo "-------------------------------------"
-# ВРЕМЕННО: Запускаем gitleaks напрямую, предполагая, что он УЖЕ есть в PATH агента Jenkins
-#         или мы добавим его установку в Dockerfile агента позже.
-#         Убираем --exit-code 1, чтобы увидеть отчет даже если секреты найдены.
+# Gitleaks будет установлен через apt-get внутри docker run
+# Запускаем с --exit-code 1
 if command -v gitleaks &> /dev/null; then
-    gitleaks detect --source . --report-path reports/gitleaks-report.json --report-format json -v || echo "Gitleaks завершился с ошибкой, но мы продолжаем (для отладки)"
+    gitleaks detect --source . --report-path reports/gitleaks-report.json --report-format json --exit-code 1 -v
+    GITLEAKS_EXIT_CODE=$?
+    if [ $GITLEAKS_EXIT_CODE -ne 0 ]; then
+        echo "*** Gitleaks НАШЕЛ СЕКРЕТЫ или ЗАВЕРШИЛСЯ С ОШИБКОЙ (код: $GITLEAKS_EXIT_CODE) ***"
+        EXIT_CODE=1
+    else
+        echo "Gitleaks прошел успешно (секреты не найдены)."
+    fi
 else
-    echo "ПРЕДУПРЕЖДЕНИЕ: gitleaks не найден в PATH. Пропускаем проверку секретов."
+     # Этого не должно произойти, так как мы установим gitleaks через apt/wget
+    echo "*** ОШИБКА: gitleaks не найден после попытки установки! ***"
+    EXIT_CODE=1 
 fi
 
 echo "-------------------------------------"
 echo " Запуск тестов с покрытием..."
 echo "-------------------------------------"
-# Запускаем тесты, но их падение не обязательно валит билд (если set -e убрать или обрабатывать ошибку)
 pytest --cov=. --cov-report=xml:reports/coverage.xml tests/
+PYTEST_EXIT_CODE=$?
+if [ $PYTEST_EXIT_CODE -ne 0 ]; then
+    echo "*** Pytest ЗАВЕРШИЛСЯ С ОШИБКОЙ (код: $PYTEST_EXIT_CODE) ***"
+    # EXIT_CODE=1 # Раскомментируйте, если падение тестов должно валить билд
+else
+    echo "Pytest прошел успешно."
+fi
 
 echo "-------------------------------------"
 echo " Запуск проверки типов..."
 echo "-------------------------------------"
-# Запускаем mypy
-mypy . --txt-report reports/mypy-report.txt || true # Игнорируем ошибки mypy для прохождения билда
+mypy . --txt-report reports/mypy-report.txt
+MYPY_EXIT_CODE=$?
+if [ $MYPY_EXIT_CODE -ne 0 ]; then
+    echo "*** Mypy ЗАВЕРШИЛСЯ С ОШИБКОЙ (код: $MYPY_EXIT_CODE), но билд не падает ***"
+else
+    echo "Mypy прошел успешно."
+fi
 
 echo "====================================="
-echo " Анализ завершен. Отчеты доступны в директории reports/"
-echo "=====================================" 
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "ОБНАРУЖЕНЫ ОШИБКИ АНАЛИЗА! Сборка завершится с ошибкой."
+else
+    echo "Анализ завершен успешно. Отчеты доступны в директории reports/"
+echo "====================================="
+
+# Возвращаем общий код ошибки
+exit $EXIT_CODE 
