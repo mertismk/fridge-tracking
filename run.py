@@ -1,7 +1,7 @@
 # run.py
-from app import create_app, db, models  
+from app import create_app, db
 import os
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 
 db_user = os.environ.get("DB_USER", "postgres")
@@ -26,8 +26,6 @@ def init_db():
             print(f"Создание новой базы данных '{db_name}'...")
             create_database(engine.url.set(database=db_name))
             print(f"База данных '{db_name}' создана!")
-
-        db_engine = create_engine(database_uri)
 
         with app.app_context():
             try:

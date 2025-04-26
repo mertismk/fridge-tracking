@@ -29,7 +29,9 @@ class Product(db.Model):
         return (expiry_date - now).days
 
     def days_in_fridge(self):
-        return (datetime.now(timezone.utc) - self.date_added.astimezone(timezone.utc)).days
+        return (
+            datetime.now(timezone.utc) - self.date_added.astimezone(timezone.utc)
+        ).days
 
     def get_rank(self):
         days = self.days_in_fridge()
