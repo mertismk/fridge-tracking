@@ -273,10 +273,10 @@ def generate_shopping_list():
 
     if added_count > 0:
         flash(
-            f"Автоматически добавлено {added_count} продуктов в список покупок",
+            f"Автоматически добавлено {added_count} продуктов в список покупок",  # noqa: E501
             "success",
         )
     else:
-        flash("Нет продуктов для автоматического добавления", "info")
+        flash("Нет продуктов для автоматического добавления", "info")  # noqa: E501
 
     return redirect(url_for("main.shopping_list"))
