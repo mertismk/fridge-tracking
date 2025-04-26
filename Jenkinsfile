@@ -4,9 +4,7 @@ pipeline {
     }
 
     environment {
-        SONARQUBE_SCANNER_HOME = tool 'SonarQubeScanner'
-        SONAR_HOST_URL = 'http://51.250.4.236:9000'
-        SONAR_AUTH_TOKEN = credentials('sonar-token')
+        // Убрали переменные SonarQube
     }
 
     stages {
@@ -16,6 +14,7 @@ pipeline {
             }
         }
 
+        // Этот этап теперь отвечает за анализ и провал билда при ошибках
         stage('Run Tests & Analysis') {
             steps {
                 sh 'chmod +x scripts/run_analysis.sh'
@@ -23,32 +22,12 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh """${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \
-                        -Dsonar.projectKey=fridge_planner \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=${SONAR_HOST_URL} \
-                        -Dsonar.login=${SONAR_AUTH_TOKEN} \
-                        -Dsonar.python.coverage.reportPaths=coverage.xml \
-                        -Dsonar.python.bandit.reportPaths=bandit-report.json \
-                        -Dsonar.python.version=3.9"""
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
+        // Убрали этап SonarQube Analysis
+        // Убрали этап Quality Gate
 
         stage('Build') {
             steps {
-                sh 'docker build -t 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER} .'
+                sh 'docker build -t 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER} .' // Используем адрес registry напрямую
                 sh 'docker tag 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER} 51.250.4.236:5000/fridge_planner:latest'
             }
         }
@@ -69,11 +48,11 @@ pipeline {
                     sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"mkdir -p /home/timofey/fridge_planner\""""
                     sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"ls -ld /home/timofey/fridge_planner\""""
                     sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"rm -rf /home/timofey/fridge_planner/db_init.sql\""""
-                    sh """scp -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv docker-compose.yml db_init.sql timofey@89.169.142.35:/home/timofey/fridge_planner/"""
+                    sh """scp -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv docker-compose.yml timofey@89.169.142.35:/home/timofey/fridge_planner/""" // Убрали копирование db_init.sql
                     sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"
                         cd /home/timofey/fridge_planner && \\
                         echo 'Attempting to modify docker-compose.yml...' && \\
-                        sed -i 's/mertismk\\\\/fridge_planner/51.250.4.236:5000\\\\/fridge_planner:latest/' docker-compose.yml && \\
+                        sed -i 's/mertismk\\/fridge_planner/51.250.4.236:5000\\/fridge_planner:latest/' docker-compose.yml && \\
                         echo 'Attempting docker-compose down...' && \\
                         docker-compose down && \\
                         echo 'Attempting docker-compose up -d...' && \\

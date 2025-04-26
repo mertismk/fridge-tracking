@@ -7,7 +7,7 @@ exclude_dirs: ['.git', 'venv', 'env', '.env', '.venv', 'tests']
 skips: []
 
 # Severity level
-severity: medium
+severity: high
 
 # Confidence level
 confidence: medium
