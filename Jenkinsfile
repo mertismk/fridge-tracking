@@ -5,12 +5,19 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            agent none
             steps {
                 checkout scm
             }
         }
 
         stage('Run Tests & Analysis') {
+            agent {
+                docker { 
+                    image 'python:3.9-slim' 
+                    reuseNode true
+                }
+            }
             steps {
                 sh 'pip install --no-cache-dir -r requirements.txt'
                 sh 'chmod +x scripts/run_analysis.sh'
@@ -19,13 +26,15 @@ pipeline {
         }
 
         stage('Build') {
+            agent none
             steps {
-                sh 'docker build -t 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER} .' // Используем адрес registry напрямую
+                sh 'docker build -t 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER} .'
                 sh 'docker tag 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER} 51.250.4.236:5000/fridge_planner:latest'
             }
         }
 
         stage('Push to Local Registry') {
+            agent none
             steps {
                 sh 'docker push 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER}'
                 sh 'docker push 51.250.4.236:5000/fridge_planner:latest'
@@ -33,6 +42,7 @@ pipeline {
         }
 
         stage('Deploy to Stage') {
+            agent none
             when {
                 expression { return env.GIT_BRANCH == 'origin/dev' }
             }
@@ -41,7 +51,7 @@ pipeline {
                     sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"mkdir -p /home/timofey/fridge_planner\""""
                     sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"ls -ld /home/timofey/fridge_planner\""""
                     sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"rm -rf /home/timofey/fridge_planner/db_init.sql\""""
-                    sh """scp -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv docker-compose.yml timofey@89.169.142.35:/home/timofey/fridge_planner/""" // Убрали копирование db_init.sql
+                    sh """scp -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv docker-compose.yml timofey@89.169.142.35:/home/timofey/fridge_planner/"""
                     sh """ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -vvv timofey@89.169.142.35 \"
                         cd /home/timofey/fridge_planner && \\
                         echo 'Attempting to modify docker-compose.yml...' && \\
