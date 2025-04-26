@@ -1,11 +1,9 @@
 pipeline {
-    agent {
-        label 'docker'
-    }
+    agent none
 
     stages {
         stage('Checkout') {
-            agent none
+            agent any
             steps {
                 checkout scm
             }
@@ -13,10 +11,7 @@ pipeline {
 
         stage('Run Tests & Analysis') {
             agent {
-                docker { 
-                    image 'python:3.9-slim' 
-                    reuseNode true
-                }
+                docker { image 'python:3.9-slim' }
             }
             steps {
                 sh 'pip install --no-cache-dir -r requirements.txt'
@@ -26,7 +21,7 @@ pipeline {
         }
 
         stage('Build') {
-            agent none
+            agent { label 'docker' }
             steps {
                 sh 'docker build -t 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER} .'
                 sh 'docker tag 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER} 51.250.4.236:5000/fridge_planner:latest'
@@ -34,7 +29,7 @@ pipeline {
         }
 
         stage('Push to Local Registry') {
-            agent none
+            agent { label 'docker' }
             steps {
                 sh 'docker push 51.250.4.236:5000/fridge_planner:${BUILD_NUMBER}'
                 sh 'docker push 51.250.4.236:5000/fridge_planner:latest'
@@ -42,7 +37,7 @@ pipeline {
         }
 
         stage('Deploy to Stage') {
-            agent none
+            agent { label 'docker' }
             when {
                 expression { return env.GIT_BRANCH == 'origin/dev' }
             }
