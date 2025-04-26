@@ -63,8 +63,11 @@ pipeline {
     }
     post {
         always {
-            // Всегда сохраняем содержимое папки reports как артефакты
-            archiveArtifacts artifacts: 'reports/**', fingerprint: true
+            // Запускаем post-действия на агенте, чтобы получить доступ к workspace
+            node(label: 'docker') {
+                echo 'Archiving reports...'
+                archiveArtifacts artifacts: 'reports/**', fingerprint: true
+            }
         }
     }
 }
