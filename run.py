@@ -10,13 +10,17 @@ db_host = os.environ.get("DB_HOST", "db")
 db_port = os.environ.get("DB_PORT", "5432")
 db_name = os.environ.get("DB_NAME", "fridge_planner")
 
-database_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+database_uri = (
+    f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+)
 
 app = create_app({"SQLALCHEMY_DATABASE_URI": database_uri})
 
 
 def init_db():
-    engine_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/postgres"
+    engine_uri = (
+        f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/postgres"
+    )
 
     try:
         engine = create_engine(engine_uri)

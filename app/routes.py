@@ -1,4 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    jsonify,
+)
 from datetime import datetime
 from app import db
 from app.models import Product, ShoppingItem
@@ -33,7 +41,9 @@ def index():
     expired_products = [p for p in products if p.is_expired()]
     expiring_soon = get_expiring_products(products, days=3)
     suggestions = get_recipe_suggestions(products)
-    veterans = sorted(products, key=lambda x: x.days_in_fridge(), reverse=True)[:5]
+    veterans = sorted(
+        products, key=lambda x: x.days_in_fridge(), reverse=True
+    )[:5]
 
     return render_template(
         "index.html",
@@ -55,7 +65,9 @@ def add_product():
         category = request.form["category"]
         quantity = float(request.form["quantity"])
         unit = request.form["unit"]
-        expiry_date = datetime.strptime(request.form["expiry_date"], "%Y-%m-%d")
+        expiry_date = datetime.strptime(
+            request.form["expiry_date"], "%Y-%m-%d"
+        )
 
         product = Product(
             name=name,
@@ -85,7 +97,9 @@ def edit_product(id):
         product.category = request.form["category"]
         product.quantity = float(request.form["quantity"])
         product.unit = request.form["unit"]
-        product.expiry_date = datetime.strptime(request.form["expiry_date"], "%Y-%m-%d")
+        product.expiry_date = datetime.strptime(
+            request.form["expiry_date"], "%Y-%m-%d"
+        )
 
         db.session.commit()
 
@@ -111,7 +125,9 @@ def delete_product(id):
 @login_required
 def statistics():
     products = Product.query.filter_by(user_id=current_user.id).all()
-    longest_living = sorted(products, key=lambda x: x.days_in_fridge(), reverse=True)
+    longest_living = sorted(
+        products, key=lambda x: x.days_in_fridge(), reverse=True
+    )
     categories = {}
 
     for product in products:

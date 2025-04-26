@@ -11,14 +11,18 @@ class Product(db.Model):
     quantity = db.Column(db.Float, nullable=False)
     unit = db.Column(db.String(20), nullable=False)
     expiry_date = db.Column(db.DateTime, nullable=False)
-    date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    date_added = db.Column(
+        db.DateTime, default=lambda: datetime.now(timezone.utc)
+    )
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     owner = db.relationship("User", backref=db.backref("products", lazy=True))
 
     from datetime import datetime, timezone
 
     def is_expired(self):
-        return datetime.now(timezone.utc) > self.expiry_date.astimezone(timezone.utc)
+        return datetime.now(timezone.utc) > self.expiry_date.astimezone(
+            timezone.utc
+        )
 
     def days_until_expiry(self):
         now = datetime.now(timezone.utc)
@@ -30,7 +34,8 @@ class Product(db.Model):
 
     def days_in_fridge(self):
         return (
-            datetime.now(timezone.utc) - self.date_added.astimezone(timezone.utc)
+            datetime.now(timezone.utc)
+            - self.date_added.astimezone(timezone.utc)
         ).days
 
     def get_rank(self):
@@ -56,11 +61,17 @@ class ShoppingItem(db.Model):
     category = db.Column(db.String(50), nullable=True)
     quantity = db.Column(db.Float, nullable=True)
     unit = db.Column(db.String(20), nullable=True)
-    priority = db.Column(db.Integer, default=2)  # 1 - высокий, 2 - средний, 3 - низкий
+    priority = db.Column(
+        db.Integer, default=2
+    )  # 1 - высокий, 2 - средний, 3 - низкий
     is_purchased = db.Column(db.Boolean, default=False)
-    date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    date_added = db.Column(
+        db.DateTime, default=lambda: datetime.now(timezone.utc)
+    )
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    owner = db.relationship("User", backref=db.backref("shopping_items", lazy=True))
+    owner = db.relationship(
+        "User", backref=db.backref("shopping_items", lazy=True)
+    )
 
     def __repr__(self):
         return f"<ShoppingItem {self.name}>"
@@ -71,7 +82,9 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    date_joined = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    date_joined = db.Column(
+        db.DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

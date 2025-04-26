@@ -41,7 +41,8 @@ def login():
         username_or_email = request.form.get("username_or_email")
         password = request.form.get("password")
         user = User.query.filter(
-            (User.username == username_or_email) | (User.email == username_or_email)
+            (User.username == username_or_email)
+            | (User.email == username_or_email)
         ).first()
         if user and user.check_password(password):
             login_user(user)

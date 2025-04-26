@@ -51,7 +51,9 @@ def get_recipe_suggestions(products):
             {
                 "name": "Мясо с овощами",
                 "products": [
-                    p.name for p in valid_products if p.category in ["Овощи", "Мясо"]
+                    p.name
+                    for p in valid_products
+                    if p.category in ["Овощи", "Мясо"]
                 ][:4],
                 "description": "Простое и вкусное блюдо из мяса с овощами.",
             }
@@ -106,7 +108,12 @@ def suggest_shopping_items(user_id, db, Product):
     suggestions = []
     for name, category, unit, count in product_counts:
         suggestions.append(
-            {"name": name, "category": category, "unit": unit, "frequency": count}
+            {
+                "name": name,
+                "category": category,
+                "unit": unit,
+                "frequency": count,
+            }
         )
 
     return suggestions
