@@ -12,13 +12,11 @@ pipeline {
 
         stage('Run Tests & Analysis') {
             steps {
+                sh 'pip install --no-cache-dir -r requirements.txt'
                 sh 'chmod +x scripts/run_analysis.sh'
                 sh './scripts/run_analysis.sh'
             }
         }
-
-        // Убрали этап SonarQube Analysis
-        // Убрали этап Quality Gate
 
         stage('Build') {
             steps {
