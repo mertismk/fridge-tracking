@@ -1,6 +1,11 @@
 from datetime import datetime, timedelta
 import random
 
+# bandit test
+import pickle
+insecure_data = pickle.loads(b"(lp0\n.")
+print(f"Тест Bandit: {insecure_data}")
+
 def get_expiring_products(products, days=3):
     today = datetime.utcnow()
     soon = today + timedelta(days=days)
