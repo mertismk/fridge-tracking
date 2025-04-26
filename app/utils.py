@@ -30,7 +30,7 @@ def get_expired_message(product):
         f"{product.name} теперь может самостоятельно передвигаться по кухне!",
         f"В темноте {product.name} уже начал светиться и подавать сигналы инопланетянам!",  # noqa: E501
         f"Поздравляем! {product.name} официально созрел для научных экспериментов!",  # noqa: E501
-        f"{product.name} эволюционировал в новую форму жизни и требует право голоса!", # noqa: E501
+        f"{product.name} эволюционировал в новую форму жизни и требует право голоса!",  # noqa: E501
         f"Если {product.name} выпустить на свободу, он может захватить весь город!",  # noqa: E501
     ]
     return random.choice(messages)
@@ -70,7 +70,7 @@ def get_recipe_suggestions(products):
                     for p in valid_products
                     if p.category in ["Молочные продукты", "Фрукты"]
                 ][:3],
-                "description": "Освежающий смузи из фруктов и молочных продуктов.", # noqa: E501
+                "description": "Освежающий смузи из фруктов и молочных продуктов.",  # noqa: E501
             }
         )
 
@@ -89,7 +89,7 @@ def suggest_shopping_items(user_id, db, Product):
     Returns:
         list: список словарей с предложениями продуктов
     """
-  
+
     product_counts = (
         db.session.query(
             Product.name,
