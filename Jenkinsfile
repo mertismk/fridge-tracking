@@ -61,4 +61,10 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            // Всегда сохраняем содержимое папки reports как артефакты
+            archiveArtifacts artifacts: 'reports/**', fingerprint: true
+        }
+    }
 }
