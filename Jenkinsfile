@@ -12,24 +12,7 @@ pipeline {
         stage('Run Tests & Analysis') {
             agent { label 'docker' }
             steps {
-                sh '''
-                    docker run --rm -v "${WORKSPACE}":/app -w /app python:3.9-slim sh -c ' \
-                        apt-get update && apt-get install -y wget tar && \
-                        echo "Установка Gitleaks..." && \
-                        GITLEAKS_VERSION="8.18.4" && \
-                        ARCH="amd64" && \
-                        wget "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_${ARCH}.tar.gz" -O gitleaks.tar.gz && \
-                        tar -xzf gitleaks.tar.gz gitleaks && \
-                        rm gitleaks.tar.gz && \
-                        chmod +x gitleaks && \
-                        mv gitleaks /usr/local/bin/ && \
-                        echo "Установка Python зависимостей..." && \
-                        pip install --no-cache-dir -r requirements.txt && \
-                        echo "Запуск скрипта анализа..." && \
-                        chmod +x scripts/run_analysis.sh && \
-                        ./scripts/run_analysis.sh \
-                    '
-                '''
+                sh \"\"\"\n                    docker run --rm -v \"${WORKSPACE}\":/app -w /app python:3.9-slim sh -c \" \\\n                        apt-get update && apt-get install -y wget tar && \\\n                        echo \\\"Установка Gitleaks...\\\" && \\\n                        GITLEAKS_VERSION='8.24.3' && \\\n                        ARCH='x64' && \\\n                        wget \\\"https://github.com/gitleaks/gitleaks/releases/download/v\${GITLEAKS_VERSION}/gitleaks_\${GITLEAKS_VERSION}_linux_\${ARCH}.tar.gz\\\" -O gitleaks.tar.gz && \\\n                        tar -xzf gitleaks.tar.gz gitleaks && \\\n                        rm gitleaks.tar.gz && \\\n                        chmod +x gitleaks && \\\n                        mv gitleaks /usr/local/bin/ && \\\n                        echo \\\"Установка Python зависимостей...\\\" && \\\n                        pip install --no-cache-dir -r requirements.txt && \\\n                        echo \\\"Запуск скрипта анализа...\\\" && \\\n                        chmod +x scripts/run_analysis.sh && \\\n                        ./scripts/run_analysis.sh \\\n                    \"\n                \"\"\"
             }
         }
 
