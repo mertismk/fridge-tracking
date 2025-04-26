@@ -45,7 +45,7 @@ pipeline {
                         echo 'Attempting docker-compose down...' && \\
                         docker-compose down && \\
                         echo 'Attempting docker-compose up -d...' && \\
-                        docker-compose up -d --force-recreate && \\
+                        docker-compose up -d --force-recreate --pull always && \\
                         echo 'Deployment commands finished.'\""""
                 }
             }
