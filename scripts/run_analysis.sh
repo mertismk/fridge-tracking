@@ -1,12 +1,9 @@
 #!/bin/bash
 
-# Убираем set -e для детальной отладки
 # set -e 
 
-# Создаем директорию для отчетов, если она не существует
 mkdir -p reports
 
-# Флаг для отслеживания общей ошибки
 EXIT_CODE=0
 
 echo "-------------------------------------"
@@ -40,7 +37,7 @@ pytest --cov=. --cov-report=xml:reports/coverage.xml tests/
 PYTEST_EXIT_CODE=$?
 if [ $PYTEST_EXIT_CODE -ne 0 ]; then
     echo "*** Pytest ЗАВЕРШИЛСЯ С ОШИБКОЙ (код: $PYTEST_EXIT_CODE) ***"
-    # EXIT_CODE=1 # Раскомментируйте, если падение тестов должно валить билд
+    # EXIT_CODE=1
 else
     echo "Pytest прошел успешно."
 fi
@@ -63,5 +60,4 @@ else
     echo "Анализ завершен успешно. Отчеты доступны в директории reports/"
 echo "====================================="
 
-# Возвращаем общий код ошибки
 exit $EXIT_CODE 

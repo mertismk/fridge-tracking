@@ -1,0 +1,67 @@
+stages:
+  - test
+  - build
+  - push
+  - deploy
+
+variables:
+  DOCKER_REGISTRY: "158.160.36.251:5000"
+  DOCKER_IMAGE: "$DOCKER_REGISTRY/fridge_planner"
+
+test:
+  stage: test
+  image: python:3.9-slim
+  script:
+    - echo "Установка Python зависимостей..."
+    - pip install --no-cache-dir -r requirements.txt
+    - echo "Запуск скрипта анализа..."
+    - chmod +x scripts/run_analysis.sh
+    - ./scripts/run_analysis.sh
+  artifacts:
+    paths:
+      - reports/
+    expire_in: 1 week
+
+build:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - mkdir -p /etc/docker
+    - echo '{"insecure-registries":["'$DOCKER_REGISTRY'"]}' > /etc/docker/daemon.json
+  script:
+    - docker build -t $DOCKER_IMAGE:$CI_PIPELINE_IID .
+    - docker tag $DOCKER_IMAGE:$CI_PIPELINE_IID $DOCKER_IMAGE:latest
+
+push:
+  stage: push
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - mkdir -p /etc/docker
+    - echo '{"insecure-registries":["'$DOCKER_REGISTRY'"]}' > /etc/docker/daemon.json
+  script:
+    - docker push $DOCKER_IMAGE:$CI_PIPELINE_IID
+    - docker push $DOCKER_IMAGE:latest
+
+deploy_stage:
+  stage: deploy
+  image: alpine:latest
+  only:
+    - dev
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+  script:
+    - ssh timofey@89.169.142.35 "mkdir -p /home/timofey/fridge_planner"
+    - scp docker-compose.yml timofey@89.169.142.35:/home/timofey/fridge_planner/
+    - ssh timofey@89.169.142.35 "
+        cd /home/timofey/fridge_planner && 
+        sed -i 's/mertismk\\/fridge_planner/$DOCKER_REGISTRY\\/fridge_planner:latest/' docker-compose.yml && 
+        docker-compose down && 
+        docker-compose up -d --force-recreate --pull always"
