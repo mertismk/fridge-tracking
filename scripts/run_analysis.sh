@@ -52,6 +52,30 @@ python -m pytest --cov=app --cov-report=html:reports/coverage_html tests/test_mo
 PYTEST_HTML_EXIT_CODE=$?
 echo "Pytest (HTML отчет) ЗАВЕРШЕН с кодом: $PYTEST_HTML_EXIT_CODE"
 
+echo "-------------------------------------"
+echo " ДЕБАГ: Проверка созданных отчетов..."
+echo "-------------------------------------"
+echo "ДЕБАГ: Содержимое каталога /app/reports:"
+ls -lR /app/reports
+echo "-------------------------------------"
+echo "ДЕБАГ: Содержимое /app/reports/pytest_results.xml (если существует):"
+if [ -f /app/reports/pytest_results.xml ]; then
+    echo "ДЕБАГ: Файл /app/reports/pytest_results.xml НАЙДЕН. Содержимое:"
+    cat /app/reports/pytest_results.xml
+else
+    echo "ДЕБАГ: Файл /app/reports/pytest_results.xml НЕ НАЙДЕН."
+fi
+echo "-------------------------------------"
+echo "ДЕБАГ: Проверка существования /app/reports/coverage_html:"
+if [ -d /app/reports/coverage_html ]; then
+    echo "ДЕБАГ: Каталог /app/reports/coverage_html СУЩЕСТВУЕТ."
+    echo "ДЕБАГ: Содержимое /app/reports/coverage_html:"
+    ls -lR /app/reports/coverage_html
+else
+    echo "ДЕБАГ: Каталог /app/reports/coverage_html НЕ НАЙДЕН."
+fi
+echo "-------------------------------------"
+
 
 if [ $PYTEST_EXIT_CODE -ne 0 ] || [ $PYTEST_HTML_EXIT_CODE -ne 0 ]; then
     echo "*** Pytest ЗАВЕРШИЛСЯ С ОШИБКОЙ (коды: основной=$PYTEST_EXIT_CODE, HTML=$PYTEST_HTML_EXIT_CODE) ***"
