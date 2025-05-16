@@ -16,11 +16,46 @@ pipeline {
                     docker run --rm -v "${WORKSPACE}":/app -w /app python:3.9-slim sh -c " 
                         echo \"Установка Python зависимостей...\" && 
                         pip install --no-cache-dir -r requirements.txt && 
+                        pip install pytest pytest-cov pytest-mock requests-mock &&
                         echo \"Запуск скрипта анализа...\" && 
                         chmod +x scripts/run_analysis.sh && 
                         ./scripts/run_analysis.sh 
                     "
                 """
+            }
+            post {
+                always {
+                    junit(testResults: 'reports/pytest_results.xml', allowEmptyResults: true)
+                    publishHTML (target : [
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'reports/coverage_html',
+                        reportFiles: 'index.html',
+                        reportName: 'Coverage Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Run Failing Test') {
+            agent { label 'docker' }
+            when {
+                branch 'feature/*'
+            }
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    sh """
+                        docker run --rm -v "${WORKSPACE}":/app -w /app python:3.9-slim sh -c " 
+                            echo \"Установка Python зависимостей...\" && 
+                            pip install --no-cache-dir -r requirements.txt && 
+                            pip install pytest && 
+                            echo \"Запуск тестов, которые должны провалиться...\" && 
+                            python -m pytest tests/test_failing.py -v
+                        "
+                    """
+                }
+                echo "Тест намеренно провален для демонстрации неуспешного прохождения (только для feature веток)"
             }
         }
 
