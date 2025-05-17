@@ -122,11 +122,12 @@ def test_get_recipe_suggestions(test_products):
 
 
 def test_get_expired_message(test_products):
-    """Тест функции получения сообщения для просроченного продукта."""
+    """Тест функции получения сообщения для просроченном продукте."""
     # Патчим random.choice для предсказуемого результата
-    with patch('random.choice', return_value="Кажется, {product.name} решил стать новым видом сыра с плесенью!"):
+    with patch('app.utils.random.choice', return_value="Кажется, {product.name} решил стать новым видом сыра с плесенью!"):
         message = get_expired_message(test_products['expired'])
-        expected = "Кажется, Уже испортился решил стать новым видом сыра с плесенью!"
+        # Форматируем вручную ожидаемое сообщение с именем продукта
+        expected = f"Кажется, {test_products['expired'].name} решил стать новым видом сыра с плесенью!"
         assert message == expected, "Неверное сообщение о просроченном продукте"
 
 
