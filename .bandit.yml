@@ -2,7 +2,7 @@ exclude_dirs: ['.git', 'venv', 'env', '.env', '.venv', 'tests']
 
 skips: []
 
-severity: medium
+severity: low
 
 confidence: low
 
