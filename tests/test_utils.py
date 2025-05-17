@@ -122,13 +122,25 @@ def test_get_recipe_suggestions(test_products):
 
 
 def test_get_expired_message(test_products):
-    """Тест функции получения сообщения для просроченном продукте."""
-    # Патчим random.choice для предсказуемого результата
-    with patch('app.utils.random.choice', return_value="Кажется, {product.name} решил стать новым видом сыра с плесенью!"):
-        message = get_expired_message(test_products['expired'])
-        # Форматируем вручную ожидаемое сообщение с именем продукта
-        expected = f"Кажется, {test_products['expired'].name} решил стать новым видом сыра с плесенью!"
-        assert message == expected, "Неверное сообщение о просроченном продукте"
+    """Тест функции получения сообщения для просроченного продукта."""
+    # Используем другой подход к тестированию функции
+    expired_product = test_products['expired']
+    
+    # Выбираем конкретное сообщение из функции для тестирования
+    message = "Кажется, X решил стать новым видом сыра с плесенью!"
+    
+    # Создаем функцию-заглушку для возврата сообщения
+    def mock_choice(messages_list):
+        for msg in messages_list:
+            if "решил стать новым видом сыра с плесенью" in msg:
+                return msg
+        return messages_list[0]  # Возвращаем первое сообщение как запасной вариант
+    
+    # Применяем патч
+    with patch('app.utils.random.choice', side_effect=mock_choice):
+        result = get_expired_message(expired_product)
+        expected = f"Кажется, {expired_product.name} решил стать новым видом сыра с плесенью!"
+        assert result == expected, "Неверное сообщение о просроченном продукте"
 
 
 def test_suggest_shopping_items(db_session, test_user):
