@@ -4,7 +4,7 @@ skips: []
 
 severity: medium
 
-confidence: medium
+confidence: low
 
 tests:
   - B101  # assert_used

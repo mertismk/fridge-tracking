@@ -82,16 +82,19 @@ def test_get_expiring_products(test_products):
     expiring = get_expiring_products(test_products["all"])
     assert (
         len(expiring) == 1
-    ), "Должен быть только один продукт с истекающим сроком \
-        годности (до 3 дней)"
+    ), (
+        "Должен быть только один продукт с истекающим сроком "
+        "годности (до 3 дней)"
+    )
     assert (
         expiring[0].name == "Скоро испортится"
     ), "Неверный продукт в списке истекающих"
 
     expiring_more = get_expiring_products(test_products["all"], days=6)
-    assert (
-        len(expiring_more) == 3
-    ), "Должно быть три продукта с истекающим сроком годности (до 6 дней)"
+    assert len(expiring_more) == 3, (
+        "Должно быть три продукта с истекающим сроком "
+        "годности (до 6 дней)"
+    )
     names = [p.name for p in expiring_more]
     assert (
         "Скоро испортится" in names
@@ -146,8 +149,10 @@ def test_get_expired_message(test_products):
     # применяем патч
     with patch("app.utils.random.choice", side_effect=mock_choice):
         result = get_expired_message(expired_product)
-        expected = f"Кажется, {expired_product.name} решил стать новым видом \
-            сыра с плесенью!"
+        expected = (
+            f"Кажется, {expired_product.name} решил стать новым видом "
+            f"сыра с плесенью!"
+        )
         assert result == expected, "Неверное сообщение о просроченном продукте"
 
 
