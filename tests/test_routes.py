@@ -6,6 +6,7 @@
 import pytest
 from datetime import datetime, timedelta, timezone
 from app.models import User, Product
+from app import db
 
 
 @pytest.fixture
