@@ -17,6 +17,9 @@ pipeline {
                         echo \"Установка Python зависимостей...\" && 
                         pip install --no-cache-dir -r requirements.txt && 
                         pip install pytest pytest-cov pytest-mock requests-mock &&
+                        echo \"Содержимое скрипта run_analysis.sh перед запуском: ==========\" &&
+                        cat scripts/run_analysis.sh &&
+                        echo \"============================================================\" &&
                         echo \"Запуск скрипта анализа...\" && 
                         chmod +x scripts/run_analysis.sh && 
                         ./scripts/run_analysis.sh 
