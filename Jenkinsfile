@@ -17,9 +17,14 @@ pipeline {
                         echo \"Установка Python зависимостей...\" && 
                         pip install --no-cache-dir -r requirements.txt && 
                         pip install pytest pytest-cov pytest-mock requests-mock &&
-                        echo \"Содержимое скрипта run_analysis.sh перед запуском: ==========\" &&
-                        cat scripts/run_analysis.sh &&
-                        echo \"============================================================\" &&
+                        echo \"Проверка файла scripts/run_analysis.sh...\" &&
+                        if [ -f scripts/run_analysis.sh ]; then 
+                            echo \"Файл scripts/run_analysis.sh НАЙДЕН. Первые 20 строк: ==========\"; 
+                            head -n 20 scripts/run_analysis.sh; 
+                            echo \"============================================================\"; 
+                        else 
+                            echo \"ОШИБКА: Файл scripts/run_analysis.sh НЕ НАЙДЕН.\"; 
+                        fi && 
                         echo \"Запуск скрипта анализа...\" && 
                         chmod +x scripts/run_analysis.sh && 
                         ./scripts/run_analysis.sh 
