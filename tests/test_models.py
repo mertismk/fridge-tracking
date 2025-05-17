@@ -1,10 +1,12 @@
 """
 Юнит-тесты для моделей приложения.
-Тестируют функциональность моделей данных, их методы и взаимодействие с базой данных.
+Тестируют функциональность моделей данных, их методы 
+и взаимодействие с базой данных.
 """
 
 from datetime import datetime, timedelta, timezone
 from app.models import User, Product, ShoppingItem
+from sqlalchemy.exc import SQLAlchemyError
 
 
 def test_user_model(db_session):
@@ -47,7 +49,7 @@ def test_user_unique_constraints(db_session):
     try:
         db_session.commit()
         assert False, "Должна быть ошибка уникальности для username"
-    except:
+    except SQLAlchemyError:
         db_session.rollback()
 
     user3 = User(username="user3", email="user1@example.com")
@@ -57,7 +59,7 @@ def test_user_unique_constraints(db_session):
     try:
         db_session.commit()
         assert False, "Должна быть ошибка уникальности для email"
-    except:
+    except SQLAlchemyError:
         db_session.rollback()
 
 
@@ -155,17 +157,20 @@ def test_product_expiry(db_session):
     ), "Просроченный продукт должен определяться как просроченный"
     assert (
         not expiring_soon.is_expired()
-    ), "Продукт со сроком годности 3 дня не должен определяться как просроченный"
+    ), "Продукт со сроком годности 3 дня не должен определяться \
+        как просроченный"
     assert (
         not fresh_product.is_expired()
     ), "Свежий продукт не должен определяться как просроченный"
 
     assert (
         expired_product.days_until_expiry() < 0
-    ), "Для просроченного продукта должно возвращаться отрицательное число дней"
+    ), "Для просроченного продукта должно возвращаться \
+        отрицательное число дней"
     assert (
         2 <= expiring_soon.days_until_expiry() <= 3
-    ), "Для продукта, который просрочится через 3 дня, должно возвращаться примерно 3 дня"
+    ), "Для продукта, который просрочится через 3 дня, должно возвращаться \
+        примерно 3 дня"
     assert (
         29 <= fresh_product.days_until_expiry() <= 30
     ), "Для свежего продукта должно возвращаться примерно 30 дней"

@@ -133,9 +133,6 @@ def test_get_expired_message(test_products):
     """Тест функции получения сообщения для просроченного продукта."""
     expired_product = test_products["expired"]
 
-    # выбираем конкретное сообщение из функции для тестирования
-    message = "Кажется, X решил стать новым видом сыра с плесенью!"
-
     # функция-заглушка для возврата сообщения
     def mock_choice(messages_list):
         for msg in messages_list:
@@ -148,7 +145,8 @@ def test_get_expired_message(test_products):
     # применяем патч
     with patch("app.utils.random.choice", side_effect=mock_choice):
         result = get_expired_message(expired_product)
-        expected = f"Кажется, {expired_product.name} решил стать новым видом сыра с плесенью!"
+        expected = f"Кажется, {expired_product.name} решил стать новым видом \
+            сыра с плесенью!"
         assert result == expected, "Неверное сообщение о просроченном продукте"
 
 

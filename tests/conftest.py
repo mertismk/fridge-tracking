@@ -29,7 +29,8 @@ def app():
         if use_sqlite:
             db_uri = "sqlite:///:memory:"
         else:
-            db_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+            db_uri = f"postgresql://{db_user}:\
+                    {db_password}@{db_host}:{db_port}/{db_name}"
 
     app = create_app(
         {
