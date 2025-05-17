@@ -2,7 +2,7 @@ exclude_dirs: ['.git', 'venv', 'env', '.env', '.venv', 'tests']
 
 skips: []
 
-severity: high
+severity: medium
 
 confidence: medium
 
@@ -83,4 +83,4 @@ tests:
   - B704  # markupsafe_markup_xss
 
 output_format: json
-output_file: bandit-report.json 
+output_file: reports/bandit-report.json 

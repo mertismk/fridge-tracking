@@ -95,9 +95,10 @@ def test_login_route(test_client):
     db.session.add(test_user)
     db.session.commit()
 
+    login_data = {"username_or_email": "logintest", "password": "password"}
     response = test_client.post(
         "/login",
-        data={"username_or_email": "logintest", "password": "password"},
+        data=login_data,
         follow_redirects=True,
     )
 
