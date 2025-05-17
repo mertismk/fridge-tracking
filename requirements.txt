@@ -7,6 +7,7 @@ gunicorn==20.1.0
 Flask-Login==0.5.0
 sqlalchemy-utils==0.37.8
 Werkzeug==2.0.3
+scrypt>=0.8.18
 coverage==6.3.2
 pytest>=7.3.1
 pytest-cov>=4.1.0

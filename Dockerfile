@@ -4,8 +4,10 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt && \
-    apt-get update && apt-get install -y wget && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential libssl-dev wget && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get purge -y --auto-remove build-essential libssl-dev && \
     wget -O /usr/local/bin/wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
     chmod +x /usr/local/bin/wait-for-it.sh && \
     apt-get clean && \
@@ -20,4 +22,4 @@ RUN sed -i 's/build: \./image: mertismk\/fridge_planner/' docker-compose.yml && 
 
 EXPOSE 5000
 
-CMD ["./start.sh"] 
+CMD ["./start.sh"]
