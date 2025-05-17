@@ -50,15 +50,15 @@ pipeline {
             }
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                    sh \"\"\"
+                    sh """
                         docker run --rm -v "${WORKSPACE}":/app -w /app python:3.9-slim sh -c " 
-                            echo \\"Установка Python зависимостей...\\" && 
+                            echo \"Установка Python зависимостей...\" && 
                             pip install --no-cache-dir -r requirements.txt && 
                             pip install pytest && 
-                            echo \\"Запуск тестов, которые должны провалиться...\\" && 
+                            echo \"Запуск тестов, которые должны провалиться...\" && 
                             export CI=true &&
                             python -m pytest tests/test_failing.py -v
-                        \"\"\"
+                        """
                 }
                 echo "Тест намеренно провален для демонстрации неуспешного прохождения (только для feature веток)"
             }
