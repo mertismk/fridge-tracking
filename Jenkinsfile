@@ -12,24 +12,20 @@ pipeline {
         stage('Run Tests & Analysis') {
             agent { label 'docker' }
             steps {
-                sh """
-                    docker run --rm -v "${WORKSPACE}":/app -w /app python:3.9-slim sh -c " 
-                        echo \"Установка Python зависимостей...\" && 
-                        pip install --no-cache-dir -r requirements.txt && 
-                        pip install pytest pytest-cov pytest-mock requests-mock &&
-                        echo \"Проверка файла scripts/run_analysis.sh...\" &&
-                        if [ -f scripts/run_analysis.sh ]; then 
-                            echo \"Файл scripts/run_analysis.sh НАЙДЕН. Первые 20 строк: ==========\"; 
-                            head -n 20 scripts/run_analysis.sh; 
-                            echo \"============================================================\"; 
-                        else 
-                            echo \"ОШИБКА: Файл scripts/run_analysis.sh НЕ НАЙДЕН.\"; 
-                        fi && 
-                        echo \"Запуск скрипта анализа...\" && 
-                        chmod +x scripts/run_analysis.sh && 
-                        ./scripts/run_analysis.sh 
+                sh 'mkdir -p reports'
+                
+                sh '''
+                    docker run --rm -v "${WORKSPACE}:/app" -w /app python:3.9-slim bash -c "
+                        echo 'Установка Python зависимостей...' && 
+                        pip install -r requirements.txt pytest pytest-cov pytest-mock requests-mock && 
+                        
+                        echo 'Запуск тестов с покрытием кода...' &&
+                        python -m pytest tests/test_models.py tests/test_utils.py tests/test_routes.py --cov=app --cov-report=xml:/app/reports/coverage.xml --cov-report=html:/app/reports/coverage_html --junitxml=/app/reports/pytest_results.xml -v &&
+                        
+                        echo 'Проверка созданных отчетов:' &&
+                        ls -la /app/reports/
                     "
-                """
+                '''
             }
             post {
                 always {
