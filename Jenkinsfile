@@ -16,15 +16,16 @@ pipeline {
                 
                 sh '''
                     docker run --rm -v "${WORKSPACE}:/app" -w /app python:3.9-slim bash -c "
-                        echo 'Установка Python зависимостей...' && 
-                        pip install -r requirements.txt pytest pytest-cov pytest-mock requests-mock && 
+                        echo 'Установка Python зависимостей...' &&
+                        pip install -r requirements.txt &&
+                        pip install pytest pytest-cov pytest-mock requests-mock bandit flake8 mypy &&
                         
-                        echo 'Запуск тестов с покрытием кода...' &&
+                        echo 'Придание прав на выполнение скрипту анализа...' &&
+                        chmod +x /app/scripts/run_analysis.sh &&
+
+                        echo 'Запуск скрипта анализа и тестов...' &&
                         export CI=true &&
-                        python -m pytest tests/test_models.py tests/test_utils.py tests/test_routes.py --cov=app --cov-report=xml:/app/reports/coverage.xml --cov-report=html:/app/reports/coverage_html --junitxml=/app/reports/pytest_results.xml -v &&
-                        
-                        echo 'Проверка созданных отчетов:' &&
-                        ls -la /app/reports/
+                        /app/scripts/run_analysis.sh
                     "
                 '''
             }
