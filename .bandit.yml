@@ -2,9 +2,9 @@ exclude_dirs: ['.git', 'venv', 'env', '.env', '.venv', 'tests']
 
 skips: []
 
-severity: low
+severity: medium
 
-confidence: low
+confidence: high
 
 tests:
   - B101  # assert_used
