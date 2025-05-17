@@ -10,7 +10,7 @@ def create_app(config=None):
     app = Flask(__name__, instance_relative_config=True)
 
     app.config.from_mapping(
-        SECRET_KEY="dev",
+        SECRET_KEY=os.environ.get("SECRET_KEY", "dev"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
 

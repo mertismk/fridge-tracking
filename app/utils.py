@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-import random
+import secrets
+
 
 def get_expiring_products(products, days=3):
     today = datetime.utcnow()
@@ -26,7 +27,7 @@ def get_expired_message(product):
         f"{product.name} эволюционировал в новую форму жизни и требует право голоса!",  # noqa: E501
         f"Если {product.name} выпустить на свободу, он может захватить весь город!",  # noqa: E501
     ]
-    return random.choice(messages)
+    return secrets.choice(messages)
 
 
 def get_recipe_suggestions(products):
