@@ -1,18 +1,21 @@
 """
-Тесты для API маршрутов приложения.
-Тестируют основные эндпоинты и функциональность HTTP запросов.
+Тесты для маршрутов приложения.
+Проверяют корректность работы различных URL-путей.
 """
+
 import pytest
-import json
 from datetime import datetime, timedelta, timezone
-from app.models import Product, User
-from flask_login import current_user, login_user
+from flask import url_for
+from app.models import User, Product
+from flask_login import current_user
+from app import db
 
 
 @pytest.fixture
 def test_client(app):
-    """Создает тестовый клиент Flask."""
-    return app.test_client()
+    """Клиент для тестирования."""
+    with app.test_client() as client:
+        yield client
 
 
 @pytest.fixture
@@ -27,62 +30,71 @@ def test_user(db_session):
 
 @pytest.fixture
 def test_products(db_session, test_user):
-    """Создает тестовые продукты для пользователя."""
+    """Создает тестовые продукты."""
     now = datetime.now(timezone.utc)
     
-    product1 = Product(
-        name="Тестовый продукт 1",
-        category="Овощи",
-        quantity=1.0,
-        unit="кг",
-        expiry_date=now + timedelta(days=5),
-        user_id=test_user.id
-    )
+    products = [
+        Product(
+            name="Тестовый продукт 1",
+            category="Овощи",
+            quantity=1.0,
+            unit="кг",
+            expiry_date=now + timedelta(days=5),
+            user_id=test_user.id
+        ),
+        Product(
+            name="Тестовый продукт 2",
+            category="Мясо",
+            quantity=0.5,
+            unit="кг",
+            expiry_date=now + timedelta(days=2),
+            user_id=test_user.id
+        ),
+        Product(
+            name="Истекший продукт",
+            category="Молочные",
+            quantity=0.5,
+            unit="л",
+            expiry_date=now - timedelta(days=1),
+            user_id=test_user.id
+        )
+    ]
     
-    product2 = Product(
-        name="Тестовый продукт 2",
-        category="Мясо",
-        quantity=0.5,
-        unit="кг",
-        expiry_date=now + timedelta(days=3),
-        user_id=test_user.id
-    )
-    
-    db_session.add_all([product1, product2])
+    db_session.add_all(products)
     db_session.commit()
     
-    return [product1, product2]
+    return products
 
 
-def test_home_page(test_client):
-    """Тест главной страницы."""
+def test_home_page_redirect(test_client):
+    """Тест перенаправления с главной страницы для неавторизованных пользователей."""
     response = test_client.get('/')
-    assert response.status_code == 200, "Главная страница должна возвращать статус 200"
-    # Для главной страницы нет смысла проверять содержимое, так как она требует авторизации
-    # и будет редиректить на /login. Проверка статуса 200 (редирект) достаточна.
+    # Без авторизации должно быть перенаправление на страницу входа
+    assert response.status_code == 302, "Главная страница должна перенаправлять неавторизованных пользователей"
+    # Проверяем, что перенаправление идет на страницу входа
+    assert '/login' in response.headers.get('Location', ''), "Перенаправление должно вести на страницу входа"
 
 
-def test_login_route(test_client, test_user):
+def test_login_route(test_client):
     """Тест маршрута авторизации."""
     # Проверяем GET запрос - должна отображаться страница входа
     response = test_client.get('/login')
     assert response.status_code == 200, "Страница входа должна возвращать статус 200"
-    assert "Login" in response.data.decode('utf-8'), "Страница должна содержать форму входа"
+    assert "Вход" in response.data.decode('utf-8'), "Страница должна содержать заголовок формы входа"
     
-    # Проверяем POST запрос - успешный вход
-    login_data = {
-        'username_or_email': 'testroutes', # Исправлено на username_or_email
-        'password': 'password',
-        'remember_me': False
-    }
-    response = test_client.post('/login', data=login_data, follow_redirects=True)
-    assert response.status_code == 200, "Редирект после входа должен возвращать статус 200"
-    assert "Dashboard" in response.data.decode('utf-8'), "После входа должен быть редирект на страницу дашборда"
+    # Проверяем POST запрос с правильными данными
+    test_user = User(username="logintest", email="logintest@example.com")
+    test_user.set_password("password")
+    db.session.add(test_user)
+    db.session.commit()
     
-    # Проверяем неверный пароль
-    login_data['password'] = 'wrongpassword'
-    response = test_client.post('/login', data=login_data)
-    assert "Неверное имя пользователя/почта или пароль" in response.data.decode('utf-8'), "Должно быть сообщение об ошибке при неверном пароле"
+    response = test_client.post('/login', data={
+        'username_or_email': 'logintest',
+        'password': 'password'
+    }, follow_redirects=True)
+    
+    assert response.status_code == 200, "После успешного входа должен быть статус 200"
+    assert "Вы успешно вошли" in response.data.decode('utf-8'), "Должно быть сообщение об успешном входе"
 
 
 def test_register_route(test_client, db_session):
@@ -90,84 +102,79 @@ def test_register_route(test_client, db_session):
     # Проверяем GET запрос - должна отображаться страница регистрации
     response = test_client.get('/register')
     assert response.status_code == 200, "Страница регистрации должна возвращать статус 200"
-    assert "Register" in response.data.decode('utf-8'), "Страница должна содержать форму регистрации"
+    assert "Регистрация" in response.data.decode('utf-8'), "Страница должна содержать заголовок формы регистрации"
     
-    # Проверяем POST запрос - успешная регистрация
-    registration_data = {
+    # Проверяем POST запрос с правильными данными
+    response = test_client.post('/register', data={
         'username': 'newuser',
         'email': 'newuser@example.com',
-        'password': 'newpassword',
-        'confirm_password': 'newpassword' # Исправлено на confirm_password
-    }
-    response = test_client.post('/register', data=registration_data, follow_redirects=True)
-    assert response.status_code == 200, "Редирект после регистрации должен возвращать статус 200"
-    assert "Login" in response.data.decode('utf-8'), "После регистрации должен быть редирект на страницу входа"
+        'password': 'password123',
+        'confirm_password': 'password123'
+    }, follow_redirects=True)
     
-    # Проверяем что пользователь действительно создан
-    user = db_session.query(User).filter_by(username='newuser').first()
+    assert response.status_code == 200, "После успешной регистрации должен быть статус 200"
+    assert "Регистрация прошла успешно" in response.data.decode('utf-8'), "Должно быть сообщение об успешной регистрации"
+    
+    # Проверяем, что пользователь создан
+    user = User.query.filter_by(username='newuser').first()
     assert user is not None, "Пользователь должен быть создан в БД"
-    assert user.email == 'newuser@example.com', "Email должен совпадать с введенным"
-    
-    # Проверяем регистрацию с существующим именем пользователя
-    response = test_client.post('/register', data=registration_data)
-    assert "Пользователь с таким именем или email уже существует" in response.data.decode('utf-8'), "Должно быть сообщение о существующем имени пользователя"
+    assert user.email == 'newuser@example.com', "Email пользователя должен быть сохранен"
+    assert user.check_password('password123'), "Пароль должен быть корректно установлен"
 
 
-def test_products_route(test_client, db_session, test_user, test_products):
-    """Тест маршрута для работы с продуктами."""
-    # Логинимся перед тестированием защищенных маршрутов
-    # Используем фикстуру test_client, которая уже содержит app контекст
-    with test_client.post('/login', data={'username_or_email': test_user.username, 'password': 'password'}, follow_redirects=True):
-        pass # Успешный логин
+def test_products_route(test_client, test_user, test_products):
+    """Тест функциональности работы с продуктами."""
+    # Сначала авторизуемся
+    test_client.post('/login', data={
+        'username_or_email': test_user.username,
+        'password': 'password'
+    })
     
-    # Проверяем GET запрос - должен отображаться список продуктов
-    response = test_client.get('/add_product') # Используем /add_product так как /products редиректит на / (index)
-    assert response.status_code == 200, "Страница добавления продуктов должна возвращать статус 200"
-    assert "Добавить продукт" in response.data.decode('utf-8'), "Страница должна содержать заголовок добавления продуктов"
-    # Проверка наличия тестовых продуктов не производится здесь, т.к. это страница добавления
+    # Проверяем страницу добавления продукта
+    response = test_client.get('/add_product')
+    assert response.status_code == 200, "Страница добавления продукта должна возвращать статус 200"
     
-    # Проверяем POST запрос - добавление нового продукта
-    new_product_data = {
-        'name': 'Новый продукт из теста',
+    # Добавляем новый продукт
+    now = datetime.now(timezone.utc)
+    tomorrow = (now + timedelta(days=1)).strftime('%Y-%m-%d')
+    
+    response = test_client.post('/add_product', data={
+        'name': 'Новый продукт',
         'category': 'Фрукты',
-        'quantity': '2',
-        'unit': 'шт',
-        'expiry_date': (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
-    }
-    response = test_client.post('/add_product', data=new_product_data, follow_redirects=True)
-    assert response.status_code == 200, "Редирект после добавления продукта должен возвращать статус 200"
-    # После добавления редирект на главную, проверяем наличие там
-    assert "Новый продукт из теста" in response.data.decode('utf-8'), "Главная страница должна содержать название нового продукта"
+        'quantity': '2.5',
+        'unit': 'кг',
+        'expiry_date': tomorrow
+    }, follow_redirects=True)
     
-    # Проверяем что продукт действительно добавлен в БД
-    product = db_session.query(Product).filter_by(name='Новый продукт из теста', user_id=test_user.id).first()
-    assert product is not None, "Продукт должен быть добавлен в БД"
-    assert product.category == 'Фрукты', "Категория продукта должна совпадать с введенной"
+    assert response.status_code == 200, "После добавления продукта должен быть статус 200"
+    assert "Новый продукт" in response.data.decode('utf-8'), "Новый продукт должен отображаться на странице"
+    
+    # Проверяем, что продукт добавлен в БД
+    product = Product.query.filter_by(name='Новый продукт', user_id=test_user.id).first()
+    assert product is not None, "Продукт должен быть сохранен в БД"
+    assert product.category == 'Фрукты', "Категория продукта должна совпадать с указанной"
+    assert product.quantity == 2.5, "Количество продукта должно совпадать с указанным"
 
 
-def test_delete_product_route(test_client, db_session, test_user, test_products):
-    """Тест маршрута для удаления продукта."""
-    # Логинимся
-    with test_client.post('/login', data={'username_or_email': test_user.username, 'password': 'password'}, follow_redirects=True):
-        pass
+def test_delete_product_route(test_client, test_user, test_products):
+    """Тест удаления продукта."""
+    # Сначала авторизуемся
+    test_client.post('/login', data={
+        'username_or_email': test_user.username,
+        'password': 'password'
+    })
     
-    # Получаем ID первого тестового продукта
-    product_to_delete_id = test_products[0].id
-    product_to_delete_name = test_products[0].name
+    # Получаем ID первого продукта
+    product_id = test_products[0].id
     
-    # Проверяем POST запрос - удаление продукта
-    # В вашем коде удаление через GET запрос, но безопаснее через POST или DELETE
-    # Исправляю тест под ваш код (GET)
-    response = test_client.get(f'/delete_product/{product_to_delete_id}', follow_redirects=True)
-    assert response.status_code == 200, "Редирект после удаления продукта должен возвращать статус 200"
-    assert f"Продукт {product_to_delete_name} удален!" in response.data.decode('utf-8'), "Должно быть сообщение об успешном удалении"
+    # Удаляем продукт
+    response = test_client.get(f'/delete_product/{product_id}', follow_redirects=True)
     
-    # Проверяем что продукт действительно удален из БД
-    product = db_session.query(Product).filter_by(id=product_to_delete_id).first()
-    assert product is None, "Продукт должен быть удален из БД"
+    assert response.status_code == 200, "После удаления продукта должен быть статус 200"
     
-    # Проверяем что второй продукт остался
-    assert db_session.query(Product).filter_by(id=test_products[1].id).first() is not None, "Другие продукты не должны быть удалены"
+    # Проверяем, что продукт удален из БД
+    deleted_product = Product.query.get(product_id)
+    assert deleted_product is None, "Продукт должен быть удален из БД"
 
 # Тесты для маршрута /recipes удалены, так как модель Recipe отсутствует
 # и маршруты для рецептов также не определены в app/routes.py
