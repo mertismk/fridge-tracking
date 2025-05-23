@@ -21,32 +21,32 @@ from prometheus_client import Counter, Gauge
 
 # Определяем кастомные метрики для бизнес-логики
 products_added = Counter(
-    'products_added_total', 
+    'products_added_total',
     'Total number of products added'
 )
 products_deleted = Counter(
-    'products_deleted_total', 
+    'products_deleted_total',
     'Total number of products deleted'
 )
 products_expiring_soon = Gauge(
-    'products_expiring_soon', 
+    'products_expiring_soon',
     'Number of products expiring soon'
 )
 products_expired = Gauge(
-    'products_expired', 
+    'products_expired',
     'Number of products that have expired'
 )
 products_by_category = Gauge(
-    'products_by_category', 
-    'Number of products by category', 
+    'products_by_category',
+    'Number of products by category',
     ['category']
 )
 shopping_items_added = Counter(
-    'shopping_items_added_total', 
+    'shopping_items_added_total',
     'Total number of shopping items added'
 )
 shopping_items_purchased = Counter(
-    'shopping_items_purchased_total', 
+    'shopping_items_purchased_total',
     'Total number of shopping items marked as purchased'
 )
 
