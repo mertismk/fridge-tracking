@@ -17,6 +17,17 @@ from app.utils import (
     suggest_shopping_items,
 )
 from flask_login import login_required, current_user
+from prometheus_client import Counter, Gauge
+from app import metrics
+
+# Определяем кастомные метрики для бизнес-логики
+products_added = Counter('products_added_total', 'Total number of products added')
+products_deleted = Counter('products_deleted_total', 'Total number of products deleted')
+products_expiring_soon = Gauge('products_expiring_soon', 'Number of products expiring soon')
+products_expired = Gauge('products_expired', 'Number of products that have expired')
+products_by_category = Gauge('products_by_category', 'Number of products by category', ['category'])
+shopping_items_added = Counter('shopping_items_added_total', 'Total number of shopping items added')
+shopping_items_purchased = Counter('shopping_items_purchased_total', 'Total number of shopping items marked as purchased')
 
 main = Blueprint("main", __name__)
 
@@ -44,6 +55,20 @@ def index():
     veterans = sorted(
         products, key=lambda x: x.days_in_fridge(), reverse=True
     )[:5]
+
+    # Обновляем метрики
+    products_expiring_soon.set(len(expiring_soon))
+    products_expired.set(len(expired_products))
+    
+    # Обновляем метрику для категорий (сначала сбрасываем старые данные)
+    category_counts = {}
+    for product in products:
+        if product.category not in category_counts:
+            category_counts[product.category] = 0
+        category_counts[product.category] += 1
+    
+    for category, count in category_counts.items():
+        products_by_category.labels(category=category).set(count)
 
     return render_template(
         "index.html",
@@ -81,6 +106,9 @@ def add_product():
         db.session.add(product)
         db.session.commit()
 
+        # Увеличиваем счетчик добавленных продуктов
+        products_added.inc()
+
         flash(f"Продукт {name} успешно добавлен!", "success")
         return redirect(url_for("main.index"))
 
@@ -116,6 +144,9 @@ def delete_product(id):
 
     db.session.delete(product)
     db.session.commit()
+
+    # Увеличиваем счетчик удаленных продуктов
+    products_deleted.inc()
 
     flash(f"Продукт {product.name} удален!", "success")
     return redirect(url_for("main.index"))
@@ -197,6 +228,9 @@ def add_shopping_item():
     db.session.add(item)
     db.session.commit()
 
+    # Увеличиваем счетчик добавленных элементов списка покупок
+    shopping_items_added.inc()
+
     flash(f"Продукт '{name}' добавлен в список покупок", "success")
     return redirect(url_for("main.shopping_list"))
 
@@ -231,8 +265,13 @@ def toggle_shopping_item(id):
         return redirect(url_for("main.shopping_list"))
 
     # Меняем статус покупки на противоположный
-    item.is_purchased = not item.is_purchased
+    was_purchased = item.is_purchased
+    item.is_purchased = not was_purchased
     db.session.commit()
+
+    # Если элемент был отмечен как приобретенный, увеличиваем счетчик
+    if not was_purchased and item.is_purchased:
+        shopping_items_purchased.inc()
 
     # Если это AJAX запрос, возвращаем JSON
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -267,6 +306,7 @@ def generate_shopping_list():
             )
             db.session.add(item)
             added_count += 1
+            shopping_items_added.inc()
 
     db.session.commit()
 

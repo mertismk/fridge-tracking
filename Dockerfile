@@ -11,7 +11,9 @@ RUN apt-get update && \
     wget -O /usr/local/bin/wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
     chmod +x /usr/local/bin/wait-for-it.sh && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /app/prometheus_metrics_data && \
+    chmod 777 /app/prometheus_metrics_data
 
 COPY . .
 

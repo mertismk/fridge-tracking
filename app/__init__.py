@@ -6,6 +6,7 @@ from prometheus_flask_exporter import PrometheusMetrics
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+metrics = None  # Глобальная переменная для доступа к метрикам
 
 
 def create_app(config_overrides=None):
@@ -30,8 +31,13 @@ def create_app(config_overrides=None):
     if 'prometheus_multiproc_dir' not in os.environ and \
             os.path.exists("./prometheus_metrics_data"):
         os.environ["prometheus_multiproc_dir"] = "./prometheus_metrics_data"
-
-    PrometheusMetrics(app)
+    
+    # Инициализируем PrometheusMetrics и сохраняем в глобальную переменную
+    global metrics
+    metrics = PrometheusMetrics(app)
+    
+    # Добавляем глобальные информационные метки
+    metrics.info('app_info', 'Fridge Planner Info', version='1.0.0')
 
     from app import routes, auth
 
