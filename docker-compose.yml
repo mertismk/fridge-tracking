@@ -13,6 +13,7 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_NAME=fridge_planner
+      - FLASK_HOST=0.0.0.0
     networks:
       - app-network
 
