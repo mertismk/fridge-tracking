@@ -22,6 +22,20 @@ test:
       - reports/
     expire_in: 1 week
 
+failing_test:
+  stage: test
+  image: python:3.9-slim
+  script:
+    - echo "Установка Python зависимостей..."
+    - pip install --no-cache-dir -r requirements.txt
+    - echo "Запуск тестов, которые должны провалиться..."
+    - export CI=true
+    - python -m pytest tests/test_failing.py -v
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\//'
+      allow_failure: true
+  needs: []
+
 build:
   stage: build
   image: docker:20.10.16
