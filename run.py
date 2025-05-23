@@ -3,12 +3,20 @@ from app import create_app, db
 import os
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
+from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
 
 db_user = os.environ.get("DB_USER", "postgres")
 db_password = os.environ.get("DB_PASSWORD", "2705")
 db_host = os.environ.get("DB_HOST", "db")
 db_port = os.environ.get("DB_PORT", "5432")
 db_name = os.environ.get("DB_NAME", "fridge_planner")
+
+# Создаем директорию для метрик Gunicorn, если ее нет
+prometheus_multiproc_dir = os.environ.get(
+    "prometheus_multiproc_dir", "./prometheus_metrics_data"
+)
+if not os.path.exists(prometheus_multiproc_dir):
+    os.makedirs(prometheus_multiproc_dir, exist_ok=True)
 
 database_uri = (
     f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
@@ -45,3 +53,8 @@ def init_db():
 if __name__ == "__main__":
     init_db()
     app.run(host="127.0.0.1", port=5000, debug=False)
+
+
+def metrics_app(environ, start_response):
+    """Точка входа для Gunicorn для обслуживания метрик на отдельном порту."""
+    pass
