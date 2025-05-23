@@ -18,16 +18,37 @@ from app.utils import (
 )
 from flask_login import login_required, current_user
 from prometheus_client import Counter, Gauge
-from app import metrics
 
 # Определяем кастомные метрики для бизнес-логики
-products_added = Counter('products_added_total', 'Total number of products added')
-products_deleted = Counter('products_deleted_total', 'Total number of products deleted')
-products_expiring_soon = Gauge('products_expiring_soon', 'Number of products expiring soon')
-products_expired = Gauge('products_expired', 'Number of products that have expired')
-products_by_category = Gauge('products_by_category', 'Number of products by category', ['category'])
-shopping_items_added = Counter('shopping_items_added_total', 'Total number of shopping items added')
-shopping_items_purchased = Counter('shopping_items_purchased_total', 'Total number of shopping items marked as purchased')
+products_added = Counter(
+    'products_added_total', 
+    'Total number of products added'
+)
+products_deleted = Counter(
+    'products_deleted_total', 
+    'Total number of products deleted'
+)
+products_expiring_soon = Gauge(
+    'products_expiring_soon', 
+    'Number of products expiring soon'
+)
+products_expired = Gauge(
+    'products_expired', 
+    'Number of products that have expired'
+)
+products_by_category = Gauge(
+    'products_by_category', 
+    'Number of products by category', 
+    ['category']
+)
+shopping_items_added = Counter(
+    'shopping_items_added_total', 
+    'Total number of shopping items added'
+)
+shopping_items_purchased = Counter(
+    'shopping_items_purchased_total', 
+    'Total number of shopping items marked as purchased'
+)
 
 main = Blueprint("main", __name__)
 
@@ -59,14 +80,14 @@ def index():
     # Обновляем метрики
     products_expiring_soon.set(len(expiring_soon))
     products_expired.set(len(expired_products))
-    
+
     # Обновляем метрику для категорий (сначала сбрасываем старые данные)
     category_counts = {}
     for product in products:
         if product.category not in category_counts:
             category_counts[product.category] = 0
         category_counts[product.category] += 1
-    
+
     for category, count in category_counts.items():
         products_by_category.labels(category=category).set(count)
 

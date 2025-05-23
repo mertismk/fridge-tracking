@@ -31,11 +31,11 @@ def create_app(config_overrides=None):
     if 'prometheus_multiproc_dir' not in os.environ and \
             os.path.exists("./prometheus_metrics_data"):
         os.environ["prometheus_multiproc_dir"] = "./prometheus_metrics_data"
-    
+
     # Инициализируем PrometheusMetrics и сохраняем в глобальную переменную
     global metrics
     metrics = PrometheusMetrics(app)
-    
+
     # Добавляем глобальные информационные метки
     metrics.info('app_info', 'Fridge Planner Info', version='1.0.0')
 
