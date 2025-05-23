@@ -48,11 +48,16 @@ build:
   tags:
     - docker
     - linux
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   services:
-    - docker:20.10.16-dind
+    - name: docker:20.10.16-dind
+      alias: docker
   before_script:
     - mkdir -p /etc/docker
     - echo '{"insecure-registries":["'$DOCKER_REGISTRY'"]}' > /etc/docker/daemon.json
+    - timeout 30s sh -c 'until docker info; do echo "Waiting for DIND service..."; sleep 1; done'
   script:
     - docker build -t $DOCKER_IMAGE:$CI_PIPELINE_IID .
     - docker tag $DOCKER_IMAGE:$CI_PIPELINE_IID $DOCKER_IMAGE:latest
@@ -63,11 +68,16 @@ push:
   tags:
     - docker
     - linux
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   services:
-    - docker:20.10.16-dind
+    - name: docker:20.10.16-dind
+      alias: docker
   before_script:
     - mkdir -p /etc/docker
     - echo '{"insecure-registries":["'$DOCKER_REGISTRY'"]}' > /etc/docker/daemon.json
+    - timeout 30s sh -c 'until docker info; do echo "Waiting for DIND service..."; sleep 1; done'
   script:
     - docker push $DOCKER_IMAGE:$CI_PIPELINE_IID
     - docker push $DOCKER_IMAGE:latest
