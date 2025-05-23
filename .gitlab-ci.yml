@@ -85,9 +85,17 @@ push:
   before_script:
     - mkdir -p /etc/docker
     - echo '{"insecure-registries":["'$DOCKER_REGISTRY'"]}' > /etc/docker/daemon.json
-    - timeout 30s sh -c 'until docker info; do echo "Waiting for DIND service..."; sleep 1; done'
+    
+    - echo "Waiting a few seconds for DIND to potentially pick up daemon.json..."
+    - sleep 5 
+
+    - timeout 30s sh -c 'until docker info; do echo "Waiting for DIND service API..."; sleep 1; done'
+    
+    - docker login -u any -p any $DOCKER_REGISTRY || echo "Login attempt (may fail for insecure http, ignoring)"
+
     - docker load -i fridge_planner_image.tar
   script:
+    - docker images 
     - docker push $DOCKER_IMAGE:$CI_PIPELINE_IID
     - docker push $DOCKER_IMAGE:latest
 
