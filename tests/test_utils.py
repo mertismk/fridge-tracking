@@ -147,7 +147,7 @@ def test_get_expired_message(test_products):
         ]  # возвращаем первое сообщение как запасной вариант
 
     # применяем патч
-    with patch("app.utils.random.choice", side_effect=mock_choice):
+    with patch("app.utils.secrets.choice", side_effect=mock_choice):
         result = get_expired_message(expired_product)
         expected = (
             f"Кажется, {expired_product.name} решил стать новым видом "

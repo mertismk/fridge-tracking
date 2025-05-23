@@ -18,7 +18,7 @@ pipeline {
                     docker run --rm -v "${WORKSPACE}:/app" -w /app python:3.9-slim bash -c "
                         echo 'Установка Python зависимостей...' &&
                         pip install -r requirements.txt &&
-                        pip install pytest pytest-cov pytest-mock requests-mock bandit flake8 mypy &&
+                        pip install pytest pytest-cov pytest-mock requests-mock bandit flake8 mypy lxml &&
                         
                         echo 'Придание прав на выполнение скрипту анализа...' &&
                         chmod +x /app/scripts/run_analysis.sh &&
