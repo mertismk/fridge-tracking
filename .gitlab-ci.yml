@@ -61,6 +61,11 @@ build:
   script:
     - docker build -t $DOCKER_IMAGE:$CI_PIPELINE_IID .
     - docker tag $DOCKER_IMAGE:$CI_PIPELINE_IID $DOCKER_IMAGE:latest
+    - docker save -o fridge_planner_image.tar $DOCKER_IMAGE:$CI_PIPELINE_IID $DOCKER_IMAGE:latest
+  artifacts:
+    paths:
+      - fridge_planner_image.tar
+    expire_in: 1 hour
 
 push:
   stage: push
@@ -74,10 +79,14 @@ push:
   services:
     - name: docker:20.10.16-dind
       alias: docker
+  needs:
+    - job: build
+      artifacts: true
   before_script:
     - mkdir -p /etc/docker
     - echo '{"insecure-registries":["'$DOCKER_REGISTRY'"]}' > /etc/docker/daemon.json
     - timeout 30s sh -c 'until docker info; do echo "Waiting for DIND service..."; sleep 1; done'
+    - docker load -i fridge_planner_image.tar
   script:
     - docker push $DOCKER_IMAGE:$CI_PIPELINE_IID
     - docker push $DOCKER_IMAGE:latest
