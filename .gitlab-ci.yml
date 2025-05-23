@@ -84,8 +84,8 @@ deploy_stage:
   before_script:
     - apk add --no-cache openssh-client
     - mkdir -p ~/.ssh
-    - echo "Attempting to write SSH_PRIVATE_KEY to id_rsa..."
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - echo "Attempting to write SSH_PRIVATE_KEY to id_rsa using cat..."
+    - cat "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
     - echo "Checking key file (first 5 lines):"
     - head -n 5 ~/.ssh/id_rsa
     - echo "Checking key file (last 5 lines):"
