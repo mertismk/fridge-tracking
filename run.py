@@ -3,7 +3,6 @@ from app import create_app, db
 import os
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
-from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
 
 db_user = os.environ.get("DB_USER", "postgres")
 db_password = os.environ.get("DB_PASSWORD", "2705")
