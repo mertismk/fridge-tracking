@@ -30,7 +30,7 @@ def create_app(config_overrides=None):
     if 'prometheus_multiproc_dir' not in os.environ and \
             os.path.exists("./prometheus_metrics_data"):
         os.environ["prometheus_multiproc_dir"] = "./prometheus_metrics_data"
-        
+
     PrometheusMetrics(app)
 
     from app import routes, auth
